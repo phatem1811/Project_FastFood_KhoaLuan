@@ -19,11 +19,11 @@ const createAccount = async (req, res, next) => {
                 'string.min': 'Mật khẩu phải có ít nhất 6 ký tự',
                 'any.required': 'Mật khẩu là bắt buộc',
             }),
-        address: Joi.string().required().min(3).max(50).trim().strict()
+        fullname: Joi.string().required().max(50).trim().strict()
             .messages({
-                'string.empty': 'Địa chỉ không được để trống',
-                'string.min': 'Địa chỉ phải có ít nhất 3 ký tự',
-                'any.required': 'Địa chỉ là bắt buộc',
+                'string.empty': 'Tên không được để trống',
+
+                'any.required': 'Tên là bắt buộc',
             }),
     })
 

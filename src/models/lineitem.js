@@ -1,20 +1,27 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class LineItem extends Model {
-    static associate(models) {
-      LineItem.belongsTo(models.Bill);
-      LineItem.belongsTo(models.Product);
-    }
+const { boolean } = require("joi");
+const mongoose = require("mongoose");
+
+const lineitemSchema = new mongoose.Schema(
+  {
+    quantity: {
+      type: Number,
+      required: true,
+    },
+    subtotal: {
+      type: Date,
+      required: true,
+    },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    }, 
+  },
+  {
+    timestamps: true,
   }
-  LineItem.init({
-    quantity: DataTypes.INTEGER,
-    subtotal: DataTypes.FLOAT
-  }, {
-    sequelize,
-    modelName: 'LineItem',
-  });
-  return LineItem;
-};
+);
+
+const Lineitem = mongoose.model("Lineitem", lineitemSchema);
+
+module.exports = Lineitem;

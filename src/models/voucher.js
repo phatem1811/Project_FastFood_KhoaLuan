@@ -1,19 +1,26 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Voucher extends Model {
-    static associate(models) {
-      Voucher.hasMany(models.Bill);
-    }
+const { boolean } = require("joi");
+const mongoose = require("mongoose");
+
+const voucherSchema = new mongoose.Schema(
+  {
+    discount: {
+      type: Number,
+      required: true,
+    },
+    expDate: {
+      type: Date,
+      required: true,
+    },
+    isActive: {
+      type: boolean,
+      required: true,
+    },  
+  },
+  {
+    timestamps: true,
   }
-  Voucher.init({
-    discount: DataTypes.FLOAT,
-    expDate: DataTypes.DATE
-  }, {
-    sequelize,
-    modelName: 'Voucher',
-  });
-  return Voucher;
-};
+);
+
+const Voucher = mongoose.model("Voucher", voucherSchema);
+
+module.exports = Voucher;

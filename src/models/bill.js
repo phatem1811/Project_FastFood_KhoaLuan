@@ -1,24 +1,57 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Bill extends Model {
-    static associate(models) {
-      Bill.belongsTo(models.Voucher);
-      Bill.hasMany(models.LineItem);
-    }
+const mongoose = require("mongoose");
+
+const BillSchema = new mongoose.Schema(
+  {
+    product_price: {
+      type: Number,
+      required: true,
+    },
+    ship: {
+      type: Number,
+      required: true,
+    },
+    total_price: {
+      type: Number,
+      required: true,
+    },
+    state: {
+      type: Number,
+      required: true,
+    },
+    address_shipment: {
+      type: String,
+      required: true,
+    },
+    phone_shipment: {
+      type: String,
+      required: true,
+    },
+    lineItem: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "LineItem",
+      },
+    ],
+    voucher: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Voucher",
+      required: false,
+    },
+    note: {
+      type: String,
+      required: false,
+    },
+    account: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Account",
+      required: false,
+    },
+  },
+  {
+    timestamps: true, 
   }
-  Bill.init({
-    productPrice: DataTypes.FLOAT,
-    ship: DataTypes.FLOAT,
-    totalPrice: DataTypes.FLOAT,
-    state: DataTypes.ENUM('UNPAID', 'PAID', 'CANCEL', 'SHIPPING', 'DELIVERED', 'RECEIVED'),
-    addressShipment: DataTypes.STRING,
-    phoneShipment: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'Bill',
-  });
-  return Bill;
-};
+);
+
+const Bill = mongoose.model("Bill", BillSchema);
+
+module.exports = Bill;

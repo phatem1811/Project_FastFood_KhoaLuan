@@ -1,9 +1,10 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../utils/ApiError";
+import { accountService } from "../services/accountService";
 const  createNew = async (req, res, next) => {
     try {
-
-        res.status(StatusCodes.CREATED).json({message:"Create succesfull"})
+        const createAccount = await accountService.createNew(req.body);
+        res.status(StatusCodes.CREATED).json({createAccount});
     }
     catch (error) { next(error); }
 }

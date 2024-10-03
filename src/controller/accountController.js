@@ -9,29 +9,17 @@ const  createNew = async (req, res, next) => {
     catch (error) { next(error); }
 }
 
+const login = async (req, res, next) => {
+    const { phonenumber, password } = req.body;
+    try {
+        const accountLogin = await accountService.login(phonenumber, password);
+        res.status(StatusCodes.OK).json({ message: "Đăng nhập thành công", accountLogin });
+    }
+    catch (error) { next(error); }
+}
+
 export const accountController = {
-    createNew
+    createNew, login,
 }
 
 
-
-// import Account from "../models/account"
-
-// const accountController = {
-//     createAccount: async (req, res ) => {
-//         try {
-//             const newAccount = new Account(req.body);
-//             const saveAccount = await newAccount.save();
-//             res.status(200).json(saveAccount);
-
-//         }
-//         catch (err) {
-
-//             res.status(500).json(err)
-//         }
-
-//         // res.status(200).json(req.body)
-//     },
-
-// };
-// module.exports = accountController;

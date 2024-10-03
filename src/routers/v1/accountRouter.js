@@ -11,10 +11,11 @@ Router.route("/")
     .get((req, res) =>{
         res.status(StatusCodes.OK).json({message : "Get list account"})
     })
-    // .post((req, res) =>{
-    //     res.status(StatusCodes.CREATED).json({message : req.body})
-    // })
     .post(accountValidation.createAccount, accountController.createNew)
+
+    
+Router.route("/login")
+    .post(accountController.login);    
 
 // Router.post("/",  accountController.createAccount );
 

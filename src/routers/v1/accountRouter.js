@@ -7,11 +7,14 @@ import {accountController} from '../../controller/accountController';
 
 const Router = express.Router();
 
-Router.route("/")
-    .get((req, res) =>{
-        res.status(StatusCodes.OK).json({message : "Get list account"})
-    })
+Router.route("/list")
+    .get( accountController.getList)
+
+Router.route("/create")    
     .post(accountValidation.createAccount, accountController.createNew)
+
+Router.route("/:id")
+    .put(accountValidation.updateAccount, accountController.updateAccount);
 
     
 Router.route("/login")

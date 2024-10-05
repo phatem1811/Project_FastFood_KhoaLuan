@@ -37,7 +37,27 @@ const login = async (phonenumber, password) => {
     throw error;
   }
 };
+const getList = async () => {
+  try {
+    const accounts = await Account.find({});
+    return accounts;
+  } catch (error) {
+    throw error;
+  }
+};
+const updateAccount = async (id, reqBody) => {
+    try {
+      const updatedAccount = await Account.findByIdAndUpdate(id, reqBody, { new: true });
+      if (!updatedAccount) {
+        throw new Error("Không tìm thấy tài khoản.");
+      }
+      return updatedAccount;
+    } catch (error) {
+      throw error;
+    }
+  };
+
 
 export const accountService = {
-  createNew, login,
+  createNew, login, getList, updateAccount
 };

@@ -13,6 +13,7 @@ const createNew = async (reqBody) => {
 const getList = async () => {
   try {
     const categorys = await Category.find({});
+    // const categoryWithProducts = await Category.findById('6700ee83457472976c88ee92').populate('products');
     return categorys;
   } catch (error) {
     throw error;

@@ -1,24 +1,45 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Product extends Model {
-    static associate(models) {
-      Product.belongsTo(models.Category);
-      Product.hasMany(models.LineItem);
-    }
+const mongoose = require("mongoose");
+
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    picture: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    isSelling: {
+      type: Boolean,
+      default: true,
+    },
+    isStock: {
+      type: Boolean,
+      default: true,
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true, 
+    },
+  },
+  {
+    timestamps: true,
   }
-  Product.init({
-    name: DataTypes.STRING,
-    picture: DataTypes.STRING,
-    description: DataTypes.STRING,
-    price: DataTypes.FLOAT,
-    isSelling: DataTypes.BOOLEAN,
-    isStock: DataTypes.BOOLEAN
-  }, {
-    sequelize,
-    modelName: 'Product',
-  });
-  return Product;
-};
+);
+
+const Product = mongoose.model("Product", productSchema);
+
+module.exports = Product;

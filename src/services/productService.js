@@ -1,7 +1,8 @@
 import Product from "../models/product";
 import Category from "../models/category";
-const createNew = async (reqBody) => {
+const createNew = async (reqBody, imagePath) => {
   try {
+    reqBody.picture = imagePath;
     const createNew = new Product(reqBody);
     const saveNew = await createNew.save();
     if (reqBody.category) {
@@ -25,7 +26,7 @@ const getList = async () => {
     throw error;
   }
 };
-const updateNew = async (id, reqBody) => {
+const updateNew = async (id, reqBody, imagePath) => {
     try {
       const updateNew = await Product.findByIdAndUpdate(id, reqBody, { new: true });
       if (!updateNew) {

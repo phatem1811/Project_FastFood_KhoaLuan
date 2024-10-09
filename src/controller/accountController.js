@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../utils/ApiError";
 import { accountService } from "../services/accountService";
-const  createNew = async (req, res, next) => {
+const createNew = async (req, res, next) => {
     try {
         const createAccount = await accountService.createNew(req.body);
         res.status(StatusCodes.CREATED).json({createAccount});
@@ -35,10 +35,51 @@ const updateAccount = async (req, res, next) => {
     } catch (error) {
       next(error);
     }
+};
+
+const getUserProfileHandler = async (req, res) => {
+    try {
+        
+      const jwt = req.headers.authorization?.split(" ")[1];
+
+      const user = await accountService.findUserProfileByJwt(jwt);
+      user.password = null;
+      res.status(200).json(user);
+    } catch (error) {
+        next(error);
+    }
+};
+const getById = async (req, res, next) => {
+  try {
+    const { id } = req.params; 
+    const account = await accountService.getById(id);
+    return res.status(200).json({
+      success: true,
+      data: account,
+    });
+  } catch (error) {
+    next(error); 
+  }
+};
+const changePassword = async (req, res, next) => {
+    const {id, currentPassword, newPassword, confirmPassword } = req.body;
+    
+  
+    try {
+      if (newPassword !== confirmPassword) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Mật khẩu xác nhận không khớp." });
+      }
+ 
+      const result = await accountService.changePassword(id, currentPassword, newPassword);
+      res.status(StatusCodes.OK).json({ message: result.message });
+    } catch (error) {
+      next(error); 
+    }
   };
 
+
 export const accountController = {
-    createNew, login, getList, updateAccount
+    createNew, login, getList, updateAccount, getUserProfileHandler, changePassword, getById
 }
 
 

@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import {accountValidation} from '../../validations/accountValidation';
 import {accountController} from '../../controller/accountController';
+import {authenticate} from '../../middleware/authenticate';
 
 const Router = express.Router();
 
@@ -14,7 +15,15 @@ Router.route("/create")
     .post(accountValidation.createAccount, accountController.createNew)
 
 Router.route("/:id")
-    .put(accountValidation.updateAccount, accountController.updateAccount);
+    .put(accountController.updateAccount);
+
+Router.get("/profile", authenticate, accountController.getUserProfileHandler)
+
+Router.route("/profile/change-password")
+    .put( accountController.changePassword); 
+
+Router.route("/get/:id")
+    .get(accountController.getById);
 
     
 Router.route("/login")

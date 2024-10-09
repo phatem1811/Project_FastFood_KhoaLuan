@@ -1,6 +1,7 @@
-import { PROCESSING } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import Account from "../models/account";
 import jwt from "jsonwebtoken";
+import { getUserIdFromToken } from '../config/jwtProvider'
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
@@ -55,9 +56,65 @@ const updateAccount = async (id, reqBody) => {
     } catch (error) {
       throw error;
     }
-  };
+};
+
+const findUserById = async(id) => {
+  try {
+    const acc = await Account.findById(id);
+    if (!acc) {
+      throw new Error("Không tìm thấy tài khoản.");
+    }
+    return acc;
+  } catch (error) {
+    throw  error;
+  }
+};
+
+const findUserProfileByJwt = async(jwt) => {
+    try {
+      const userId = getUserIdFromToken(jwt);
+      
+      const user = await Account.findById(userId);
+      return user;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+};
+const changePassword = async (id, currentPassword, newPassword) => {
+  try {
+
+    const acc = await Account.findById(id);
+    if (!acc) {
+      throw new Error("Người dùng không tồn tại.");
+    }
+
+    if (acc.password !== currentPassword) {
+      throw new Error("Mật khẩu hiện tại không chính xác.");
+    }
+
+
+    acc.password = newPassword;
+    await acc.save();
+
+    return { message: "Mật khẩu đã được thay đổi thành công." };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const getById = async (id) => {
+  try {
+    const account = await Account.findById(id);
+    if (!account) {
+      throw new Error('Không tìm thấy tài khoản');
+    }
+    return account;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 
 export const accountService = {
-  createNew, login, getList, updateAccount
+  createNew, login, getList, updateAccount, findUserById, findUserProfileByJwt,changePassword, getById
 };

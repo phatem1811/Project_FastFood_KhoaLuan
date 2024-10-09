@@ -3,8 +3,24 @@ import ApiError from "../utils/ApiError";
 
 import { productService } from "../services/productService";
 const  createNew = async (req, res, next) => {
+
+    const storage =   multer.diskStorage({
+      destination: function (req, file, callback) {
+        callback(null, './uploads/');
+      },
+      filename: function (req, file, callback) {
+        callback(null, file.originalname);
+      }
+    });
+    const upload = multer({ storage : storage}).single('file');
+    upload(req,res,function(err) {
+
+      const imagePath = `${process.env.UPLOAD_DIR}${path.basename(req.file.path)}`;
+
+    })
+
     try {
-        const createNew = await productService.createNew(req.body);
+        const createNew = await productService.createNew(req.body, imagePath);
         res.status(StatusCodes.CREATED).json({createNew});
     }
     catch (error) { next(error); }
@@ -32,6 +48,8 @@ const getProductsByCategory = async (req, res, next) => {
 
 const updateNew = async (req, res, next) => {
     const { id } = req.params;
+    ;
+  
     try {
       const updateNew = await productService.updateNew(id, req.body);
       res.status(StatusCodes.OK).json({ message: "Cập nhật tthành công", updateNew });

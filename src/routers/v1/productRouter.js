@@ -52,6 +52,9 @@ Router.route("/delete/:id")
 
 Router.route("/unblock/:id")
     .put(productController.unblockProduct);
+  
+ Router.route("/get/:id")
+    .get(productController.getById);
     
 
 

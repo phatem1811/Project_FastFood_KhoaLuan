@@ -46,6 +46,18 @@ const getProductsByCategory = async (categoryId) => {
     }
 };
 
+const getById = async (id) => {
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm");
+    }
+    return product;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 const unblockProduct= async (id) => {
   try {
     const updated = await Product.findByIdAndUpdate(
@@ -85,5 +97,5 @@ const deleteProduct = async (id) => {
 
 
 export const productService = {
-  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct
+  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById
 };

@@ -18,6 +18,10 @@ Router.route("/delete/:id")
 
 Router.route("/unblock/:id")
     .put(categoryController.unblockCategory);
+
+
+Router.route("/get/:id")
+    .get(categoryController.getById);
     
 
 

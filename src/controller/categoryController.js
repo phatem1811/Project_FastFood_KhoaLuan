@@ -50,10 +50,24 @@ const updateNew = async (req, res, next) => {
       next(error);
     }
   };
+ 
+  
+  const getById = async (req, res, next) => {
+    try {
+      const { id } = req.params; 
+      const category = await categoryService.getById(id);
+      return res.status(200).json({
+        success: true,
+        data: category,
+      });
+    } catch (error) {
+      next(error); 
+    }
+  };
   
 
 export const categoryController = {
-    createNew,  getList, updateNew, deleteCategory, unblockCategory
+    createNew,  getList, updateNew, deleteCategory, unblockCategory, getById
 }
 
 

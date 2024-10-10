@@ -66,8 +66,21 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
+const getById = async (req, res, next) => {
+  try {
+    const { id } = req.params; 
+    const product = await productService.getById(id);
+    return res.status(200).json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    next(error); 
+  }
+};
+
 export const productController = {
-    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct
+    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById
 }
 
 

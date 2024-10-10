@@ -20,6 +20,19 @@ const createNew = async (reqBody) => {
 //   }
 // };
 
+const getById = async (id) => {
+  try {
+    const category = await Category.findById(id);
+    if (!category) {
+      throw new Error("Không tìm thấy danh mục");
+    }
+    return category;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+
 const getList = async () => {
   try {
 
@@ -81,5 +94,5 @@ const unblockCategory = async (id) => {
 };
 
 export const categoryService = {
-  createNew,  getList, updateNew, deleteCategory, unblockCategory
+  createNew,  getList, updateNew, deleteCategory, unblockCategory, getById
 };

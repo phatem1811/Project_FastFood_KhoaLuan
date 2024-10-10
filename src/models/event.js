@@ -1,21 +1,29 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Event extends Model {
-    static associate(models) {
-      Event.belongsToMany(models.Product, { through: 'EventProducts' });
-    }
+const mongoose = require('mongoose');
+
+const EventSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  discountPercent: {
+    type: Number,
+    required: true
+  },
+  expDate: {
+    type: Date,
+    required: true
+  },
+  products: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
+  isActive: {
+    type: Boolean,
+    default: true
   }
-  Event.init({
-    name: DataTypes.STRING,
-    discountPercent: DataTypes.FLOAT,
-    prodDate: DataTypes.DATE,
-    expDate: DataTypes.DATE
-  }, {
-    sequelize,
-    modelName: 'Event',
-  });
-  return Event;
-};
+});
+
+// Tạo model từ schema
+const Event = mongoose.model('Event', EventSchema);
+
+module.exports = Event;

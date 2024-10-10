@@ -4,23 +4,8 @@ import ApiError from "../utils/ApiError";
 import { productService } from "../services/productService";
 const  createNew = async (req, res, next) => {
 
-    const storage =   multer.diskStorage({
-      destination: function (req, file, callback) {
-        callback(null, './uploads/');
-      },
-      filename: function (req, file, callback) {
-        callback(null, file.originalname);
-      }
-    });
-    const upload = multer({ storage : storage}).single('file');
-    upload(req,res,function(err) {
-
-      const imagePath = `${process.env.UPLOAD_DIR}${path.basename(req.file.path)}`;
-
-    })
-
     try {
-        const createNew = await productService.createNew(req.body, imagePath);
+        const createNew = await productService.createNew(req.body);
         res.status(StatusCodes.CREATED).json({createNew});
     }
     catch (error) { next(error); }

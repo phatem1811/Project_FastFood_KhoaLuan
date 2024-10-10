@@ -2,7 +2,6 @@ import Product from "../models/product";
 import Category from "../models/category";
 const createNew = async (reqBody, imagePath) => {
   try {
-    reqBody.picture = imagePath;
     const createNew = new Product(reqBody);
     const saveNew = await createNew.save();
     if (reqBody.category) {

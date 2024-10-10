@@ -7,6 +7,8 @@ import connection from "./config/connectDB.js";
 import { APIs} from './routers/v1/index.js'
 var cors = require('cors')
 import { errorHandlingMiddleware } from "./middleware/errorHandlingMiddleware.js";
+
+const cloudinary = require("./config/config.cloundinary");
 const app = express();
 
 

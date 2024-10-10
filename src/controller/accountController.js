@@ -37,6 +37,27 @@ const updateAccount = async (req, res, next) => {
     }
 };
 
+const unblockAccount = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const unblockAccount = await accountService.unblockAccount(id, req.body);
+    res.status(StatusCodes.OK).json({ message: "Mở khóa tài khoản thành công", unblockAccount });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const deleteAccount = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const deleteAccount = await accountService.deleteAccount(id, req.body);
+    res.status(StatusCodes.OK).json({ message: "Khóa tài khoản thành công", deleteAccount });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getUserProfileHandler = async (req, res) => {
     try {
         
@@ -79,7 +100,7 @@ const changePassword = async (req, res, next) => {
 
 
 export const accountController = {
-    createNew, login, getList, updateAccount, getUserProfileHandler, changePassword, getById
+    createNew, login, getList, updateAccount, getUserProfileHandler, changePassword, getById, deleteAccount, unblockAccount
 }
 
 

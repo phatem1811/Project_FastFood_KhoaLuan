@@ -23,7 +23,7 @@ const updateNew = async (id, reqBody) => {
     try {
       const updateCategory = await Category.findByIdAndUpdate(id, reqBody, { new: true });
       if (!updateCategory) {
-        throw new Error("Không tìm thấy tài khoản.");
+        throw new Error("Không tìm thấy category.");
       }
       return updateCategory;
     } catch (error) {
@@ -31,7 +31,42 @@ const updateNew = async (id, reqBody) => {
     }
   };
 
+const deleteCategory = async (id) => {
+  try {
+    const updatedCate = await Category.findByIdAndUpdate(
+      id,
+      { isActive: false }, 
+      { new: true }
+    );
+
+    if (!updatedCate) {
+      throw new Error("Không tìm thấy tài khoản.");
+    }
+
+    return updatedCate;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const unblockCategory = async (id) => {
+  try {
+    const updatedCate = await Category.findByIdAndUpdate(
+      id,
+      { isActive: true }, 
+      { new: true }
+    );
+
+    if (!updatedCate) {
+      throw new Error("Không tìm thấy danh mục.");
+    }
+
+    return updatedCate;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const categoryService = {
-  createNew,  getList, updateNew,
+  createNew,  getList, updateNew, deleteCategory, unblockCategory
 };

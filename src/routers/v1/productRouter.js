@@ -46,6 +46,12 @@ Router.route("/:id")
 
 Router.route("/category/:categoryId") 
     .get(productController.getProductsByCategory); 
+
+Router.route("/delete/:id")
+    .put(productController.deleteProduct);
+
+Router.route("/unblock/:id")
+    .put(productController.unblockProduct);
     
 
 

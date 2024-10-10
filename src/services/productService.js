@@ -46,6 +46,44 @@ const getProductsByCategory = async (categoryId) => {
     }
 };
 
+const unblockProduct= async (id) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(
+      id,
+      { isSelling: true }, 
+      { new: true }
+    );
+
+    if (!updated) {
+      throw new Error("Không tìm thấy sản phẩm.");
+    }
+
+    return updated;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const deleteProduct = async (id) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(
+      id,
+      { isSelling: false }, 
+      { new: true }
+    );
+
+    if (!updated) {
+      throw new Error("Không tìm thấy sản phẩm.");
+    }
+
+    return updated;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
 export const productService = {
-  createNew,  getList, updateNew, getProductsByCategory
+  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct
 };

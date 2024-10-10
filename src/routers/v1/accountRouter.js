@@ -17,6 +17,12 @@ Router.route("/create")
 Router.route("/:id")
     .put(accountController.updateAccount);
 
+Router.route("/delete/:id")
+    .put(accountController.deleteAccount);
+
+Router.route("/unblock/:id")
+    .put(accountController.unblockAccount);
+
 Router.get("/profile", authenticate, accountController.getUserProfileHandler)
 
 Router.route("/profile/change-password")

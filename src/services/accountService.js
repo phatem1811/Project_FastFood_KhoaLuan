@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import Account from "../models/account";
 import jwt from "jsonwebtoken";
-import { getUserIdFromToken } from '../config/jwtProvider'
+import { getUserIdFromToken } from "../config/jwtProvider";
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
@@ -22,16 +22,14 @@ const login = async (phonenumber, password) => {
     }
 
     if (account.password !== password) {
-        throw new Error("Số điện thoại hoặc Mật khẩu không đúng");
+      throw new Error("Số điện thoại hoặc Mật khẩu không đúng");
     }
 
     const access_token = jwt.sign(
-        { id: account._id, phonenumber: account.phonenumber }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: process.env.JWT_EXPIRE } 
+      { id: account._id, phonenumber: account.phonenumber },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRE }
     );
-  
-
 
     return { account, access_token };
   } catch (error) {
@@ -47,18 +45,55 @@ const getList = async () => {
   }
 };
 const updateAccount = async (id, reqBody) => {
-    try {
-      const updatedAccount = await Account.findByIdAndUpdate(id, reqBody, { new: true });
-      if (!updatedAccount) {
-        throw new Error("Không tìm thấy tài khoản.");
-      }
-      return updatedAccount;
-    } catch (error) {
-      throw error;
+  try {
+    const updatedAccount = await Account.findByIdAndUpdate(id, reqBody, {
+      new: true,
+    });
+    if (!updatedAccount) {
+      throw new Error("Không tìm thấy tài khoản.");
     }
+    return updatedAccount;
+  } catch (error) {
+    throw error;
+  }
+};
+const unblockAccount = async (id) => {
+  try {
+    const updatedAccount = await Account.findByIdAndUpdate(
+      id,
+      { state: true }, 
+      { new: true }
+    );
+
+    if (!updatedAccount) {
+      throw new Error("Không tìm thấy tài khoản.");
+    }
+
+    return updatedAccount;
+  } catch (error) {
+    throw error;
+  }
 };
 
-const findUserById = async(id) => {
+const deleteAccount = async (id) => {
+  try {
+    const updatedAccount = await Account.findByIdAndUpdate(
+      id,
+      { state: false }, 
+      { new: true }
+    );
+
+    if (!updatedAccount) {
+      throw new Error("Không tìm thấy tài khoản.");
+    }
+
+    return updatedAccount;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const findUserById = async (id) => {
   try {
     const acc = await Account.findById(id);
     if (!acc) {
@@ -66,23 +101,22 @@ const findUserById = async(id) => {
     }
     return acc;
   } catch (error) {
-    throw  error;
+    throw error;
   }
 };
 
-const findUserProfileByJwt = async(jwt) => {
-    try {
-      const userId = getUserIdFromToken(jwt);
-      
-      const user = await Account.findById(userId);
-      return user;
-    } catch (error) {
-      throw new Error(error.message);
-    }
+const findUserProfileByJwt = async (jwt) => {
+  try {
+    const userId = getUserIdFromToken(jwt);
+
+    const user = await Account.findById(userId);
+    return user;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 const changePassword = async (id, currentPassword, newPassword) => {
   try {
-
     const acc = await Account.findById(id);
     if (!acc) {
       throw new Error("Người dùng không tồn tại.");
@@ -91,7 +125,6 @@ const changePassword = async (id, currentPassword, newPassword) => {
     if (acc.password !== currentPassword) {
       throw new Error("Mật khẩu hiện tại không chính xác.");
     }
-
 
     acc.password = newPassword;
     await acc.save();
@@ -106,7 +139,7 @@ const getById = async (id) => {
   try {
     const account = await Account.findById(id);
     if (!account) {
-      throw new Error('Không tìm thấy tài khoản');
+      throw new Error("Không tìm thấy tài khoản");
     }
     return account;
   } catch (error) {
@@ -114,7 +147,15 @@ const getById = async (id) => {
   }
 };
 
-
 export const accountService = {
-  createNew, login, getList, updateAccount, findUserById, findUserProfileByJwt,changePassword, getById
+  createNew,
+  login,
+  getList,
+  updateAccount,
+  findUserById,
+  findUserProfileByJwt,
+  changePassword,
+  getById,
+  deleteAccount,
+  unblockAccount,
 };

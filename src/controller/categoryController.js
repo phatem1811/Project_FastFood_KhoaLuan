@@ -30,8 +30,30 @@ const updateNew = async (req, res, next) => {
     }
   };
 
+  const deleteCategory = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const deletecate = await categoryService.deleteCategory(id, req.body);
+      res.status(StatusCodes.OK).json({ message: "Khóa danh mục thành công", deletecate });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
+  const unblockCategory = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const unblockcate = await categoryService.unblockCategory(id, req.body);
+      res.status(StatusCodes.OK).json({ message: "Mở khóa danh mục thành công", unblockcate });
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+
 export const categoryController = {
-    createNew,  getList, updateNew
+    createNew,  getList, updateNew, deleteCategory, unblockCategory
 }
 
 

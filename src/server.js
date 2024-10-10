@@ -11,21 +11,16 @@ import { errorHandlingMiddleware } from "./middleware/errorHandlingMiddleware.js
 const cloudinary = require("./config/config.cloundinary");
 const app = express();
 
-
-
 const hostname = 'localhost'
 const port = 8080
 // Connect to DB
 connection();
 
-
-
-
-
 app.use(cors())
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.use("/v1",APIs );
 

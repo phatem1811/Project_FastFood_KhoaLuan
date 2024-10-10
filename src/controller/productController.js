@@ -43,8 +43,31 @@ const updateNew = async (req, res, next) => {
     }
   };
 
+
+  
+const unblockProduct = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const unblock = await productService.unblockProduct(id, req.body);
+    res.status(StatusCodes.OK).json({ message: "Mở khóa sản phẩm thành công", unblock });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const deleteProduct = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const deleted = await productService.deleteProduct(id, req.body);
+    res.status(StatusCodes.OK).json({ message: "Khóa sản phẩm thành công", deleted });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const productController = {
-    createNew,  getList, updateNew, getProductsByCategory
+    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct
 }
 
 

@@ -12,6 +12,12 @@ Router.route("/create")
 
 Router.route("/:id")
     .put(categoryController.updateNew);
+
+Router.route("/delete/:id")
+    .put(categoryController.deleteCategory);
+
+Router.route("/unblock/:id")
+    .put(categoryController.unblockCategory);
     
 
 

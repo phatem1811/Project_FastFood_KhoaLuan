@@ -19,7 +19,7 @@ const createNew = async (reqBody, imagePath) => {
 
 const getList = async () => {
   try {
-    const products = await Product.find({});
+    const products = await Product.find({}).populate('category',  '_id name');
     return products;
   } catch (error) {
     throw error;
@@ -94,8 +94,43 @@ const deleteProduct = async (id) => {
   }
 };
 
+const searchProductByName = async (name) => {
+  try {
+   
+    const products = await Product.find({
+      name: { $regex: name, $options: 'i' } // 'i' là để không phân biệt hoa thường
+    });
+
+    return products;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getListPage = async (page = 1, limit = 5) => {
+  try {
+    const skip = (page - 1) * limit;
+    const products = await Product.find({}).populate('category',  '_id name')
+      .skip(skip)
+      .limit(limit);
+    
+    const totalProducts = await Product.countDocuments({});
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    return {
+      products,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalProducts
+      }
+    };
+  } catch (error) {
+    throw error;
+  }
+};
 
 
 export const productService = {
-  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById
+  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,searchProductByName,getListPage
 };

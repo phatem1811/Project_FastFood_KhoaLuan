@@ -79,8 +79,37 @@ const getById = async (req, res, next) => {
   }
 };
 
+const searchProduct = async (req, res) => {
+  try {
+    const { name } = req.query; 
+
+    const products = await productService.searchProductByName(name);
+
+    return res.status(200).json(products);
+  } catch (error) {
+    next(error); 
+  }
+};
+
+
+export const getProductListPage = async (req, res) => {
+  try {
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.size) || 5;
+
+
+    const result = await productService.getListPage(page, limit);
+
+
+    res.status(200).json(result);
+  } catch (error) {
+    next(error); 
+  }
+};
+
 export const productController = {
-    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById
+    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage
 }
 
 

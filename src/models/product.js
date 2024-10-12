@@ -21,6 +21,11 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    currentPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     isSelling: {
       type: Boolean,
       default: true,
@@ -33,6 +38,10 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true, 
+    },
+    event: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "event",
     },
   },
   {

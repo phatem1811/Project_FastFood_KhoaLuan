@@ -1,16 +1,32 @@
 import Product from "../models/product";
+import Event from "../models/event";
 import Category from "../models/category";
 const createNew = async (reqBody, imagePath) => {
   try {
+    let currentPrice = reqBody.price;
+
+    if (reqBody.event) {
+      const event = await Event.findById(reqBody.event);
+
+      if (event && event.discountPercent) {
+        const discount = (reqBody.price * event.discountPercent) / 100;
+        currentPrice = reqBody.price - discount;
+      }
+    }
+
+    reqBody.currentPrice = currentPrice;
+
     const createNew = new Product(reqBody);
     const saveNew = await createNew.save();
+
     if (reqBody.category) {
-        await Category.findByIdAndUpdate(
-            reqBody.category,
-            { $addToSet: { products: saveNew._id } }, 
-            { new: true }
-        );
+      await Category.findByIdAndUpdate(
+        reqBody.category,
+        { $addToSet: { products: saveNew._id } }, 
+        { new: true }
+      );
     }
+
     return saveNew;
   } catch (error) {
     throw error;
@@ -19,24 +35,41 @@ const createNew = async (reqBody, imagePath) => {
 
 const getList = async () => {
   try {
-    const products = await Product.find({}).populate('category',  '_id name');
+    const products = await Product.find({})
+      .populate('category',  '_id name')
+      // .populate('event', '_id name');
     return products;
   } catch (error) {
     throw error;
   }
 };
 const updateNew = async (id, reqBody, imagePath) => {
-    try {
-      const updateNew = await Product.findByIdAndUpdate(id, reqBody, { new: true });
-      if (!updateNew) {
-        throw new Error("Không tìm thấy sản phẩm.");
-        }
-      return updateNew;
-    } catch (error) {
-      throw error;
+  try {
+    let product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm.");
     }
-};
 
+    let currentPrice = reqBody.price || product.price; 
+    if (reqBody.event) {
+      const event = await Event.findById(reqBody.event);
+      if (event && event.discountPercent) {
+        const discount = (currentPrice * event.discountPercent) / 100;
+        currentPrice = currentPrice - discount;
+      }
+    }
+    reqBody.currentPrice = currentPrice;
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, reqBody, { new: true });
+    if (!updatedProduct) {
+      throw new Error("Không thể cập nhật sản phẩm.");
+    }
+
+    return updatedProduct;
+  } catch (error) {
+    throw error;
+  }
+};
 const getProductsByCategory = async (categoryId) => {
     try {
       const products = await Product.find({ category: categoryId }); 

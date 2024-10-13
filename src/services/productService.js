@@ -140,23 +140,30 @@ const searchProductByName = async (name) => {
   }
 };
 
-const getListPage = async (page = 1, limit = 5) => {
+const getListPage = async (page = 1, limit = 5, searchTerm = "") => {
   try {
     const skip = (page - 1) * limit;
-    const products = await Product.find({}).populate('category',  '_id name')
+    let searchQuery = {};
+    
+    if (searchTerm) {
+      searchQuery = { name: { $regex: searchTerm, $options: "i" } }; 
+    }
+    const products = await Product.find(searchQuery)
+      .populate("category", "_id name")
       .skip(skip)
       .limit(limit);
-    
-    const totalProducts = await Product.countDocuments({});
+    const totalProducts = await Product.countDocuments(searchQuery);
     const totalPages = Math.ceil(totalProducts / limit);
 
     return {
-      products,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalProducts
-      }
+      data: {
+        products,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalProducts,
+        },
+      },
     };
   } catch (error) {
     throw error;

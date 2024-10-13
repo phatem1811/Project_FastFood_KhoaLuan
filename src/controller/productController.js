@@ -92,21 +92,20 @@ const searchProduct = async (req, res) => {
 };
 
 
-export const getProductListPage = async (req, res) => {
+export const getProductListPage = async (req, res, next) => {
   try {
-
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.size) || 5;
+    const searchTerm = req.query.search || ""; 
 
-
-    const result = await productService.getListPage(page, limit);
-
+    const result = await productService.getListPage(page, limit, searchTerm);
 
     res.status(200).json(result);
   } catch (error) {
     next(error); 
   }
 };
+
 
 export const productController = {
     createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage

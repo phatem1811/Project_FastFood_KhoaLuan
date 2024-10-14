@@ -140,7 +140,7 @@ const searchProductByName = async (name) => {
   }
 };
 
-const getListPage = async (page = 1, limit = 5, searchTerm = "") => {
+const getListPage = async (page = 1, limit = 5, searchTerm = "",  cateId = null,  isSelling = null) => {
   try {
     const skip = (page - 1) * limit;
     let searchQuery = {};
@@ -148,6 +148,13 @@ const getListPage = async (page = 1, limit = 5, searchTerm = "") => {
     if (searchTerm) {
       searchQuery = { name: { $regex: searchTerm, $options: "i" } }; 
     }
+    if (cateId) {
+      searchQuery.category = cateId;  
+    }
+    if (isSelling !== null) {
+      searchQuery.isSelling = isSelling;
+    }
+
     const products = await Product.find(searchQuery)
       .populate("category", "_id name")
       .skip(skip)

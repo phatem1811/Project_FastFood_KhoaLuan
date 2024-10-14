@@ -97,8 +97,10 @@ export const getProductListPage = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.size) || 5;
     const searchTerm = req.query.search || ""; 
+    const cateId = req.query.cateId || null;
+    const isSelling = req.query.isSelling || null;
 
-    const result = await productService.getListPage(page, limit, searchTerm);
+    const result = await productService.getListPage(page, limit, searchTerm, cateId, isSelling);
 
     res.status(200).json(result);
   } catch (error) {

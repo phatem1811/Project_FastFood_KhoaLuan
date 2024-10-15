@@ -2,10 +2,7 @@ const mongoose = require("mongoose");
 
 const BillSchema = new mongoose.Schema(
   {
-    product_price: {
-      type: Number,
-      required: true,
-    },
+
     ship: {
       type: Number,
       required: true,
@@ -17,6 +14,11 @@ const BillSchema = new mongoose.Schema(
     state: {
       type: Number,
       required: true,
+      default: 1,
+    },
+    fullName: {
+      type: String,
+      required: true,
     },
     address_shipment: {
       type: String,
@@ -24,6 +26,14 @@ const BillSchema = new mongoose.Schema(
     },
     phone_shipment: {
       type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    isPaid: {
+      type: Boolean,
       required: true,
     },
     lineItem: [

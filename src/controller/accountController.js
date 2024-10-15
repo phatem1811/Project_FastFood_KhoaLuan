@@ -19,8 +19,14 @@ const login = async (req, res, next) => {
 }
 const getList = async (req, res, next) => {
     try {
-        const accounts = await accountService.getList();
-        res.status(StatusCodes.OK).json({ message: "Get list successfull", accounts });
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.size) || 10;
+      const phonenumber = req.query.search || ""; 
+      const state = req.query.state || null;
+      const role = req.query.role || null;
+  
+        const data = await accountService.getList(page,limit, phonenumber,state, role );
+        res.status(StatusCodes.OK).json({ data });
     }
     catch (error) {
         next(error);

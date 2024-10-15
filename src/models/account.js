@@ -33,7 +33,7 @@ const accountSchema = new mongoose.Schema(
     role: {
         type: Number,
         required: true,
-        default: 1,
+        default: 3,
     },
     bills: [
       {

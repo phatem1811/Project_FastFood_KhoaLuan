@@ -36,13 +36,37 @@ const login = async (phonenumber, password) => {
     throw error;
   }
 };
-const getList = async () => {
-  try {
-    const accounts = await Account.find({});
-    return accounts;
-  } catch (error) {
-    throw error;
+const getList = async (
+  page = 1,
+  limit = 10,
+  phonenumber = null,
+  state = null,
+  role=null
+) => {
+  const skip = (page - 1) * limit;
+  let searchQuery = {};
+  if (phonenumber) {
+    searchQuery = { phonenumber: { $regex: phonenumber, $options: "i" } };
   }
+  if (state !== null) {
+    searchQuery.state = state;
+  }
+  if (role !== null) {
+    searchQuery.role = role;
+  }
+  const accounts = await Account.find(searchQuery).skip(skip).limit(limit);
+  const totalAccount = await Account.countDocuments(searchQuery);
+  const totalPages = Math.ceil(totalAccount / limit);
+  return {
+    
+      accounts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalAccount,
+      },
+    
+  };
 };
 const updateAccount = async (id, reqBody) => {
   try {
@@ -61,7 +85,7 @@ const unblockAccount = async (id) => {
   try {
     const updatedAccount = await Account.findByIdAndUpdate(
       id,
-      { state: true }, 
+      { state: true },
       { new: true }
     );
 
@@ -79,7 +103,7 @@ const deleteAccount = async (id) => {
   try {
     const updatedAccount = await Account.findByIdAndUpdate(
       id,
-      { state: false }, 
+      { state: false },
       { new: true }
     );
 

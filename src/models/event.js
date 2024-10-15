@@ -1,27 +1,34 @@
 const mongoose = require('mongoose');
 
-const EventSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
+const EventSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true
+    },
+    discountPercent: {
+      type: Number,
+      required: true
+    },
+    expDate: {
+      type: Date,
+      required: true
+    },
+    products: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    }],
+    isActive: {
+      type: Boolean,
+      required: true,
+      default: true
+    }
   },
-  discountPercent: {
-    type: Number,
-    required: true
-  },
-  expDate: {
-    type: Date,
-    required: true
-  },
-  products: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
-  }],
-  isActive: {
-    type: Boolean,
-    default: true
+
+  {
+    timestamps: true,
   }
-});
+);
 
 // Tạo model từ schema
 const Event = mongoose.model('Event', EventSchema);

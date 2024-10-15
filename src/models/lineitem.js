@@ -15,13 +15,13 @@ const lineitemSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
-    }, 
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Lineitem = mongoose.model("Lineitem", lineitemSchema);
+const Lineitem = mongoose.model("LineItem", lineitemSchema);
 
 module.exports = Lineitem;

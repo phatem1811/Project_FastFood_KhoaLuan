@@ -4,8 +4,12 @@ import { billService } from "../services/billService";
 
 const getList = async (req, res, next) => {
   try {
-      const bills = await billService.getList();
-      res.status(StatusCodes.OK).json({ message: "get list sucessful", bills });
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.size) || 10;
+      const phone_shipment = req.query.phone || ""; 
+      const accountId = req.query.accountId || null;
+      const data = await billService.getList(page,limit,phone_shipment, accountId);
+      res.status(StatusCodes.OK).json({ message: "get list sucessful", data });
   }
   catch (error) {
       next(error);

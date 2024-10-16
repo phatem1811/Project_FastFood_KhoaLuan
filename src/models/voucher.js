@@ -3,17 +3,25 @@ const mongoose = require("mongoose");
 
 const voucherSchema = new mongoose.Schema(
   {
+    code: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    name: {
+      type: String,
+      required: true,
+    },
     discount: {
       type: Number,
       required: true,
     },
-    expDate: {
-      type: Date,
-      required: true,
-    },
+
+
     isActive: {
-      type: boolean,
+      type: Boolean,
       required: true,
+      default: true
     },  
   },
   {

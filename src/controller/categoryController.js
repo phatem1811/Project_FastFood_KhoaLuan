@@ -1,7 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../utils/ApiError";
 import { categoryService } from "../services/categoryService";
-import { accountService } from "../services/accountService";
 const  createNew = async (req, res, next) => {
     try {
         const createNew = await categoryService.createNew(req.body);

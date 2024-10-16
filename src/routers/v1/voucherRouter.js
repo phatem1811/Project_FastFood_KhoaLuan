@@ -13,15 +13,18 @@ Router.route("/create")
 Router.route("/:id")
     .put(voucherController.updateNew);
 
-Router.route("/delete/:id")
-    .put(voucherController.deletevoucher);
+// // Router.route("/delete/:id")
+// //     .put(voucherController.deletevoucher);
 
-Router.route("/unblock/:id")
-    .put(voucherController.unblockvoucher);
+// // Router.route("/unblock/:id")
+// //     .put(voucherController.unblockvoucher);
 
 
 Router.route("/get/:id")
     .get(voucherController.getById);
+
+Router.route("/getcode")
+    .get(voucherController.getCode);
     
 
 

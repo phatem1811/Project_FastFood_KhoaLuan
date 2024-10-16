@@ -62,27 +62,65 @@ const getList = async (
     const skip = (page - 1) * limit;
     let searchQuery = {};
     if (phone_shipment) {
-      searchQuery = { phone_shipment: { $regex: phone_shipment, $options: "i" } };
+      searchQuery = {
+        phone_shipment: { $regex: phone_shipment, $options: "i" },
+      };
     }
     if (accountId !== null) {
       searchQuery.accountId = accountId;
     }
 
-    const bills = await Bill.find(searchQuery).skip(skip).limit(limit)
+    const bills = await Bill.find(searchQuery)
+      .skip(skip)
+      .limit(limit)
       .populate("lineItem")
       .sort({ createdAt: -1 });
     const totalBill = await Bill.countDocuments(searchQuery);
     const totalPages = Math.ceil(totalBill / limit);
     return {
-    
-        bills,
-        pagination: {
-          currentPage: page,
-          totalPages,
-          totalBill,
-        },
-      
+      bills,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalBill,
+      },
     };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const updateBill = async (id, state) => {
+  try {
+    const updatedBill = await Bill.findByIdAndUpdate(
+      id,
+      { state },
+      { new: true }
+    );
+
+    if (!updatedBill) {
+      throw new Error("Bill không tồn tại");
+    }
+
+    return updatedBill;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const getById = async (id) => {
+  try {
+    const bill = await Bill.findById(id).populate({
+      path: "lineItem",
+      populate: {
+        path: "product", 
+      },
+    });
+
+    if (!bill) {
+      throw new Error("Không tìm thấy danh mục");
+    }
+    return bill;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -91,4 +129,6 @@ const getList = async (
 export const billService = {
   createNew,
   getList,
+  updateBill,
+  getById
 };

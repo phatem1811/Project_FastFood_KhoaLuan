@@ -5,6 +5,7 @@ import { getUserIdFromToken } from "../config/jwtProvider";
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
+    console.log("check" , reqBody.role)
     const newAccount = new Account(reqBody);
     const saveAccount = await newAccount.save();
     return saveAccount;

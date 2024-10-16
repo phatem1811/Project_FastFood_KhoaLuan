@@ -12,7 +12,7 @@ Router.route("/list")
     .get( accountController.getList)
 
 Router.route("/create")    
-    .post(accountValidation.createAccount, accountController.createNew)
+    .post(accountController.createNew)
 
 Router.route("/:id")
     .put(accountController.updateAccount);

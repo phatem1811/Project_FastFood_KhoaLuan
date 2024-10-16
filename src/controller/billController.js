@@ -4,6 +4,7 @@ import { billService } from "../services/billService";
 
 const getList = async (req, res, next) => {
   try {
+    // console.log("check")
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.size) || 10;
       const phone_shipment = req.query.phone || ""; 
@@ -26,21 +27,35 @@ const createNew = async (req, res, next) => {
   }
 };
 
-const updateNew = async (req, res, next) => {
-const billData = req.body;
+const updateBill = async (req, res) => {
   try {
-    const updateNew = await billService.updateNew(id, billData);
-    res
-      .status(StatusCodes.OK)
-      .json({ message: "Cập nhật tthành công", updateNew });
+    const { id } = req.params;
+    const { state } = req.body;     
+    const updatedBill = await billService.updateBill(id, state);
+
+    return res.status(200).json(updatedBill);
   } catch (error) {
     next(error);
   }
 };
+const getById = async (req, res, next) => {
+  try {
+    const { id } = req.params; 
+    const bill = await billService.getById(id);
+    return res.status(200).json({
+      success: true,
+      data: bill,
+    });
+  } catch (error) {
+    next(error); 
+  }
+};
+
 
 export const billController = {
   createNew,
-  updateNew,
-  getList
+  getById,
+  getList,
+  updateBill
 
 };

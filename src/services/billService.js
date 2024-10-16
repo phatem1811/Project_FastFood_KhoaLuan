@@ -67,7 +67,7 @@ const getList = async (
       };
     }
     if (accountId !== null) {
-      searchQuery.accountId = accountId;
+      searchQuery.account = accountId;
     }
 
     const bills = await Bill.find(searchQuery)

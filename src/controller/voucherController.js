@@ -69,7 +69,7 @@ const updateNew = async (req, res, next) => {
 
   const getCode = async (req, res, next) => {
     try {
-      const { code } = req.body; 
+      const { code } = req.query; 
       const voucher = await voucherService.getCode(code);
       return res.status(200).json({
         success: true,

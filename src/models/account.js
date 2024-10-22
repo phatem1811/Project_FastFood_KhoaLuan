@@ -30,10 +30,14 @@ const accountSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    point: {
+      type: Number,
+      default: 0,
+    },
     role: {
-        type: Number,
-        required: true,
-        default: 3,
+      type: Number,
+      required: true,
+      default: 3,
     },
     bills: [
       {

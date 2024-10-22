@@ -29,17 +29,33 @@ const createNew = async (billData) => {
       phone_shipment: billData.phone_shipment,
       isPaid: billData.isPaid,
       lineItem: lineItems,
+      pointDiscount: billData.pointDiscount || 0,
       voucher: billData.voucher || null,
       note: billData.note || null,
       account: billData.account || null,
     });
-
     await newBill.save({ session });
+    const pointsToAdd = Math.floor(newBill.total_price / 100);
+    const pointDiscount = billData.pointDiscount || 0;
+    
+    const account = await Account.findById(billData.account).session(session);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    const newPoint = account.point - pointDiscount + pointsToAdd;
+    
+    if (account.point < pointDiscount) {
+      throw new Error('Not enough points for discount');
+    }
 
     await Account.findByIdAndUpdate(
       billData.account,
-      { $push: { bills: newBill._id } },
-      { session }
+      {
+        $push: { bills: newBill._id }, 
+        point: newPoint,
+      },
+      { session, new: true }
     );
 
     await session.commitTransaction();

@@ -11,6 +11,9 @@ const BillSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    pointDiscount: {
+      type: Number,
+    },
     state: {
       type: Number,
       required: true,

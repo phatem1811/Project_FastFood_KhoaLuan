@@ -12,9 +12,9 @@ Router.route("/create")
 
 Router.route("/:id")
     .put(eventController.updateNew);
+Router.route("/:id")
+    .put(eventController.updateNew);
 
-Router.route("/delete/:id")
-    .put(eventController.deleteEvent);
 
 // Router.route("/unblock/:id")
 //     .put(eventController.unblockCategory);

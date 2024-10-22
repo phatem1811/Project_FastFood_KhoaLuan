@@ -22,6 +22,7 @@ const getList = async (req, res, next) => {
 
 const updateNew = async (req, res, next) => {
     const { id } = req.params;
+    const { products } = req.body;
     try {
       const updateNew = await eventService.updateNew(id, req.body);
       res.status(StatusCodes.OK).json({ message: "Cập nhật tthành công", updateNew });

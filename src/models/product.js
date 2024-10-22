@@ -41,7 +41,7 @@ const productSchema = new mongoose.Schema(
     },
     event: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "event",
+      ref: "Event",
     },
   },
   {

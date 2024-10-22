@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import Event from '../models/event';
-
+import Product from '../models/product';
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
@@ -22,9 +22,17 @@ const getList = async () => {
 };
 const updateNew = async (id, reqBody) => {
   try {
+    const products = reqBody.products;
     const updated = await Event.findByIdAndUpdate(id, reqBody, {
       new: true,
     });
+
+    if (products && products.length > 0) {
+      await Product.updateMany(
+        { _id: { $in: products } }, 
+        { $set: { event: updated._id } }
+      );
+    }
     if (!updated) {
       throw new Error("Không tìm thấy sự kiện.");
     }
@@ -50,6 +58,7 @@ const updateNew = async (id, reqBody) => {
 //     throw error;
 //   }
 // };
+
 
 const deleteEvent = async (id) => {
   try {

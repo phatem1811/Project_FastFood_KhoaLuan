@@ -28,10 +28,21 @@ const updateNew = async (id, reqBody) => {
     });
 
     if (products && products.length > 0) {
-      await Product.updateMany(
-        { _id: { $in: products } }, 
-        { $set: { event: updated._id } }
-      );
+    
+      const discountPercent = updated.discountPercent;
+      await Promise.all(products.map(async (productId) => {
+        const product = await Product.findById(productId);
+        
+        if (product) {
+          const discount = (product.currentPrice * discountPercent) / 100;
+          const newCurrentPrice = product.currentPrice - discount;
+
+          await Product.findByIdAndUpdate(
+            productId,
+            { $set: { event: updated._id, currentPrice: newCurrentPrice } }
+          );
+        }
+      }));
     }
     if (!updated) {
       throw new Error("Không tìm thấy sự kiện.");
@@ -77,10 +88,6 @@ const deleteEvent = async (id) => {
     throw error;
   }
 };
-
-
-
-
 
 
 const getById = async (id) => {

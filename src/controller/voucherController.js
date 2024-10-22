@@ -32,15 +32,15 @@ const updateNew = async (req, res, next) => {
     }
   };
 
-//   const deleteVoucher = async (req, res, next) => {
-//     const { id } = req.params;
-//     try {
-//       const deletecate = await voucherService.deleteVoucher(id, req.body);
-//       res.status(StatusCodes.OK).json({ message: "Khóa danh mục thành công", deletecate });
-//     } catch (error) {
-//       next(error);
-//     }
-//   };
+  const deleteVoucher = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const deleteVoucher = await voucherService.deleteVoucher(id, req.body);
+      res.status(StatusCodes.OK).json({ message: "Khóa voucher thành công", deleteVoucher });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 
 //   const unblockVoucher = async (req, res, next) => {
@@ -82,7 +82,7 @@ const updateNew = async (req, res, next) => {
   
 
 export const voucherController = {
-    createNew,  getList, updateNew, getById, getCode
+    createNew,  getList, updateNew, getById, getCode, deleteVoucher
 }
 
 

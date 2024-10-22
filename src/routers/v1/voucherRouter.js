@@ -26,7 +26,8 @@ Router.route("/get/:id")
 Router.route("/getcode")
     .get(voucherController.getCode);
     
-
+Router.route("/delete/:id")
+    .put(voucherController.deleteVoucher);
 
 // Router.post("/",  accountController.createAccount );
 

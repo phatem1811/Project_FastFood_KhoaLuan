@@ -60,23 +60,23 @@ const updateNew = async (id, reqBody) => {
     }
   };
 
-// const deleteVoucher = async (id) => {
-//   try {
-//     const updated = await Voucher.findByIdAndUpdate(
-//       id,
-//       { isActive: false }, 
-//       { new: true }
-//     );
+const deleteVoucher = async (id) => {
+  try {
+    const updated = await Voucher.findByIdAndUpdate(
+      id,
+      { isActive: false }, 
+      { new: true }
+    );
 
-//     if (!updated) {
-//       throw new Error("Không tìm thấy tài khoản.");
-//     }
+    if (!updated) {
+      throw new Error("Không tìm thấy tài khoản.");
+    }
 
-//     return updated;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+    return updated;
+  } catch (error) {
+    throw error;
+  }
+};
 
 // const unblockVoucher = async (id) => {
 //   try {
@@ -97,5 +97,5 @@ const updateNew = async (id, reqBody) => {
 // };
 
 export const voucherService = {
-  createNew,  getList, updateNew, getById, getCode
+  createNew,  getList, updateNew, getById, getCode,deleteVoucher
 };

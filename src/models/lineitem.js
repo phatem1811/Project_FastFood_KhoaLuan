@@ -8,7 +8,7 @@ const lineitemSchema = new mongoose.Schema(
       required: true,
     },
     subtotal: {
-      type: Date,
+      type: Number,
       required: true,
     },
     product: {

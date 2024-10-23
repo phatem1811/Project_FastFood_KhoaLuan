@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 import Lineitem from "../models/lineitem";
 import Bill from "../models/bill";
 import Account from "../models/account";
+import Product from "../models/product";
 const createNew = async (billData) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -123,6 +124,55 @@ const updateBill = async (id, state) => {
     throw new Error(error.message);
   }
 };
+const getListByDate = async (startDate, endDate) => {
+  try {
+
+    const searchQuery = {
+      createdAt: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)   
+      }
+    };
+
+    const bills = await Bill.find(searchQuery)
+      .populate("lineItem") 
+      .sort({ createdAt: -1 }); 
+
+    const productStats = {};
+    bills.forEach((bill) => {
+      bill.lineItem.forEach((item) => {
+        const productId = item.product.toString(); 
+        const quantity = item.quantity;
+
+        if (productStats[productId]) {
+          productStats[productId] += quantity;
+        } else {
+          productStats[productId] = quantity;
+        }
+      });
+    });
+    const productIds = Object.keys(productStats);
+    const products = await Product.find({ _id: { $in: productIds } }); 
+    
+    const productSale = products.map((product) => {
+      return {
+        id: product._id,
+        name: product.name,      
+        price: product.price,  
+        picture: product.picture, 
+        quantity: productStats[product._id.toString()], 
+      };
+    });
+    const revenue = bills.reduce((total, bill) => total + bill.total_price, 0);
+    return {
+      bills,
+      revenue,
+      productSale
+    }; 
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 const getById = async (id) => {
   try {
@@ -146,5 +196,6 @@ export const billService = {
   createNew,
   getList,
   updateBill,
-  getById
+  getById,
+  getListByDate
 };

@@ -10,6 +10,7 @@ Router.route("/create").post(billController.createNew);
 Router.route("/:id").put(billController.updateBill);
 
 Router.route("/get/:id").get(billController.getById);
+Router.route("/getbydate").get(billController.getListByDate);
 
 // Router.post("/",  accountController.createAccount );
 

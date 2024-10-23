@@ -16,6 +16,17 @@ const getList = async (req, res, next) => {
       next(error);
   }
 }
+const getListByDate = async (req, res, next) => {
+  const { startDate, endDate } = req.body; 
+
+  try {
+    const data = await billService.getListByDate(startDate, endDate);
+    res.status(200).json({ data });
+  } catch (error) {
+    // Xử lý lỗi và trả về phản hồi
+    next(error);
+  }
+};
 
 const createNew = async (req, res, next) => {
   try {
@@ -56,6 +67,7 @@ export const billController = {
   createNew,
   getById,
   getList,
-  updateBill
+  updateBill,
+  getListByDate
 
 };

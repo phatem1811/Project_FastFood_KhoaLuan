@@ -15,7 +15,6 @@ const hostname = 'localhost'
 const port = 8080
 // Connect to DB
 connection();
-
 app.use(cors())
 
 app.use(bodyParser.json());

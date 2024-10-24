@@ -191,11 +191,52 @@ const getById = async (id) => {
     throw new Error(error.message);
   }
 };
+const getMonthlyRevenue = async (year) => {
+  try {
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31`);
+
+    const monthlyRevenue = await Bill.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" }, // Nhóm theo tháng
+          totalRevenue: { $sum: "$total_price" }, // Tính tổng doanh thu của tháng
+        },
+      },
+      {
+        $sort: { _id: 1 }, // Sắp xếp theo thứ tự tháng từ 1 đến 12
+      },
+    ]);
+
+    // Đảm bảo trả về doanh thu cho tất cả 12 tháng, nếu tháng nào không có doanh thu thì giá trị sẽ là 0
+    const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
+      const monthRevenue = monthlyRevenue.find((item) => item._id === i + 1);
+      return {
+        month: i + 1, // Tháng (1 đến 12)
+        totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0, // Doanh thu
+      };
+    });
+
+    return revenueByMonth;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 
 export const billService = {
   createNew,
   getList,
   updateBill,
   getById,
-  getListByDate
+  getListByDate,
+  getMonthlyRevenue
 };

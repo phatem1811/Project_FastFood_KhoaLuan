@@ -62,12 +62,29 @@ const getById = async (req, res, next) => {
   }
 };
 
+const getMonthlyRevenue = async (req, res, next) => {
+  try {
+    const { year } = req.query; 
+    if (!year) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Year is required");
+    }
+
+    const data = await billService.getMonthlyRevenue(year);
+    return res.status(StatusCodes.OK).json({
+      message: `Doanh thu cho năm ${year} lấy thành công`,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const billController = {
   createNew,
   getById,
   getList,
   updateBill,
-  getListByDate
+  getListByDate,
+  getMonthlyRevenue
 
 };

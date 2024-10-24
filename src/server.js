@@ -13,7 +13,6 @@ const app = express();
 
 const hostname = 'localhost'
 const port = 8080
-// Connect to DB
 connection();
 app.use(cors())
 

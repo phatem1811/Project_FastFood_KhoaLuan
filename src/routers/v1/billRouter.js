@@ -11,6 +11,7 @@ Router.route("/:id").put(billController.updateBill);
 
 Router.route("/get/:id").get(billController.getById);
 Router.route("/getbydate").get(billController.getListByDate);
+Router.route("/getrevenue").get(billController.getMonthlyRevenue);
 
 // Router.post("/",  accountController.createAccount );
 

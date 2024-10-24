@@ -54,10 +54,24 @@ const updateNew = async (req, res, next) => {
       next(error); 
     }
   };
+  const getMonthlyExpenses = async (req, res, next) => {
+    try {
+      const { year } = req.query; 
+      if (!year) {
+        year = 2024
+      }
   
+      const data = await ingredientService.getMonthlyExpenses(year);
+      return res.status(StatusCodes.OK).json({
+        data
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 export const ingredientController = {
-    createNew,  getList, updateNew, getById, deleteById
+    createNew,  getList, updateNew, getById, deleteById, getMonthlyExpenses
 }
 
 

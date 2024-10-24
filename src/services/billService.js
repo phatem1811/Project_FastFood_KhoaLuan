@@ -124,26 +124,28 @@ const updateBill = async (id, state) => {
     throw new Error(error.message);
   }
 };
-const getListByDate = async (startDate, endDate) => {
+const getListByDate = async () => {
   try {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
 
     const searchQuery = {
       createdAt: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)   
+        $gte: startDate,
+        $lte: endDate
       }
     };
 
     const bills = await Bill.find(searchQuery)
-      .populate("lineItem") 
-      .sort({ createdAt: -1 }); 
+      .populate("lineItem")
+      .sort({ createdAt: -1 });
 
     const productStats = {};
     bills.forEach((bill) => {
       bill.lineItem.forEach((item) => {
-        const productId = item.product.toString(); 
+        const productId = item.product.toString();
         const quantity = item.quantity;
-
         if (productStats[productId]) {
           productStats[productId] += quantity;
         } else {
@@ -152,23 +154,22 @@ const getListByDate = async (startDate, endDate) => {
       });
     });
     const productIds = Object.keys(productStats);
-    const products = await Product.find({ _id: { $in: productIds } }); 
-    
+    const products = await Product.find({ _id: { $in: productIds } });
+
     const productSale = products.map((product) => {
       return {
         id: product._id,
-        name: product.name,      
-        price: product.price,  
-        picture: product.picture, 
-        quantity: productStats[product._id.toString()], 
+        name: product.name,
+        price: product.price,
+        picture: product.picture,
+        quantity: productStats[product._id.toString()]
       };
     });
-    const revenue = bills.reduce((total, bill) => total + bill.total_price, 0);
+
+
     return {
-      bills,
-      revenue,
       productSale
-    }; 
+    };
   } catch (error) {
     throw new Error(error.message);
   }
@@ -207,21 +208,20 @@ const getMonthlyRevenue = async (year) => {
       },
       {
         $group: {
-          _id: { $month: "$createdAt" }, // Nhóm theo tháng
-          totalRevenue: { $sum: "$total_price" }, // Tính tổng doanh thu của tháng
+          _id: { $month: "$createdAt" }, 
+          totalRevenue: { $sum: "$total_price" }, 
         },
       },
       {
-        $sort: { _id: 1 }, // Sắp xếp theo thứ tự tháng từ 1 đến 12
+        $sort: { _id: 1 }, 
       },
     ]);
 
-    // Đảm bảo trả về doanh thu cho tất cả 12 tháng, nếu tháng nào không có doanh thu thì giá trị sẽ là 0
     const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
       const monthRevenue = monthlyRevenue.find((item) => item._id === i + 1);
       return {
-        month: i + 1, // Tháng (1 đến 12)
-        totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0, // Doanh thu
+        month: i + 1, 
+        totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0, 
       };
     });
 

@@ -23,7 +23,6 @@ const getListByDate = async (req, res, next) => {
     const data = await billService.getListByDate(startDate, endDate);
     res.status(200).json({ data });
   } catch (error) {
-    // Xử lý lỗi và trả về phản hồi
     next(error);
   }
 };

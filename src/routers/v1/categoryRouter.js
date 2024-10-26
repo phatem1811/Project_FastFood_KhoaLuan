@@ -1,5 +1,6 @@
 import express from 'express';
 
+import { categoryValidation } from "../../validations/categoryValidation";
 import { categoryController } from '../../controller/categoryController';
 const Router = express.Router();
 
@@ -8,7 +9,7 @@ Router.route("/list")
     .get( categoryController.getList)
 
 Router.route("/create")    
-    .post(categoryController.createNew)
+    .post(categoryValidation.CreateCategory, categoryController.createNew)
 
 Router.route("/:id")
     .put(categoryController.updateNew);

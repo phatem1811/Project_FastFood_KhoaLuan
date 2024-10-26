@@ -1,6 +1,8 @@
 import express from 'express';
 
 import { productController } from '../../controller/productController';
+import { productValidation } from "../../validations/productValidation";
+
 const multer = require('multer');
 const path = require('path');
 const Router = express.Router();
@@ -39,7 +41,7 @@ Router.route("/list")
     .get( productController.getList)
 
 Router.route("/create")    
-    .post(productController.createNew)
+    .post(productValidation.CreateProduct,productController.createNew)
 
 Router.route("/:id")
     .put(productController.updateNew);

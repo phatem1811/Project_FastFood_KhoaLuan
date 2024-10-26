@@ -2,10 +2,11 @@ import { StatusCodes } from "http-status-codes";
 import Account from "../models/account";
 import jwt from "jsonwebtoken";
 import { getUserIdFromToken } from "../config/jwtProvider";
+import { addOTP, verifyOTP, removeOTP, checkotp } from '../utils/otpStore';
+import { generateOTP, sendOTP } from '../utils/mailler'
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
-    console.log("check" , reqBody.role)
     const newAccount = new Account(reqBody);
     const saveAccount = await newAccount.save();
     return saveAccount;
@@ -171,6 +172,27 @@ const getById = async (id) => {
     throw new Error(error.message);
   }
 };
+const requestOTP  = async (req, res, next) => {
+  const { email } = req.body;
+  const otp = generateOTP();
+  const expiresAt = Date.now() + 5 * 60 * 1000; 
+  try {
+    await sendOTP(email, otp);
+    addOTP(email, otp, expiresAt);
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+const verifyOTPAndCreate = async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  if (verifyOTP(email, otp)) {
+    const createAccount = await createNew(req.body);
+    return createAccount;
+  } else {
+    throw new Error('OTP không hợp lệ hoặc đã hết hạn!' );
+  }
+};
 
 export const accountService = {
   createNew,
@@ -183,4 +205,6 @@ export const accountService = {
   getById,
   deleteAccount,
   unblockAccount,
+  requestOTP,
+  verifyOTPAndCreate
 };

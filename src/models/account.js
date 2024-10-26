@@ -14,6 +14,10 @@ const accountSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+    },
     birthdate: {
       type: Date,
       required: false,
@@ -22,10 +26,7 @@ const accountSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    email: {
-      type: String,
-      required: false,
-    },
+    
     state: {
       type: Boolean,
       default: true,

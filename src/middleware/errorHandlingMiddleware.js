@@ -6,9 +6,11 @@ export const errorHandlingMiddleware = (err, req, res, next) => {
   if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR
 
   const responseError = {
+    errorCode : err.errorCode,
     statusCode: err.statusCode,
     message: err.message || StatusCodes[err.statusCode], 
-    stack: err.stack
+    stack: err.stack,
+    
   }
 
   res.status(responseError.statusCode).json(responseError)

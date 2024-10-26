@@ -22,31 +22,36 @@ const createAccount = async (req, res, next) => {
         fullname: Joi.string().required().max(50).trim().strict()
             .messages({
                 'string.empty': 'Tên không được để trống',
-
                 'any.required': 'Tên là bắt buộc',
             }),
-    })
+        email: Joi.string().email().required().trim().strict()
+            .messages({
+                'string.empty': 'Email không được để trống',
+                'string.email': 'Định dạng email không hợp lệ',
+                'any.required': 'Email là bắt buộc',
+            }),
+    });
 
     try {
-        await checkEmpty.validateAsync(req.body, { abortEarly: false })
+        await checkEmpty.validateAsync(req.body, { abortEarly: false });
 
-        const { phonenumber } = req.body
-        const existingAccount = await Account.findOne({ phonenumber })
+        const { phonenumber, email } = req.body;
         
+        const existingAccount = await Account.findOne({ phonenumber });
         if (existingAccount) {
-
-            next(new ApiError(StatusCodes.BAD_REQUEST, "Số điện thoại đã tồn tại" ));
-
+            return next(new ApiError(StatusCodes.BAD_REQUEST, "Số điện thoại đã tồn tại",  "PHONE_EXISTS"));
         }
+        const existingEmail = await Account.findOne({ email });
+        if (existingEmail) {
+            return next(new ApiError(StatusCodes.BAD_REQUEST, "Email đã tồn tại", "EMAIL_EXISTS"));
+        }
+
         next();
-
-        // res.status(StatusCodes.CREATED).json({ message: "Post: created successfully" })
     } catch (error) {
-
-        next(new ApiError(StatusCodes.BAD_REQUEST,  new Error(error).message ) );
-
+        next(new ApiError(StatusCodes.BAD_REQUEST, new Error(error).message));
     }
-}
+};
+
 const updateAccount = async (req, res, next) => {
     const checkUpdate = Joi.object({
         phonenumber: Joi.string().required().min(3).max(50).trim().strict()

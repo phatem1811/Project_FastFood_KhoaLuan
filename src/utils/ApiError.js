@@ -1,19 +1,13 @@
-
-/**
- * Định nghĩa riêng một Class ApiError kế thừa class Error sẵn 
- */
 class ApiError extends Error {
-    constructor(statusCode, message) {
-
-      super(message)
-  
-
-      this.name = 'ApiError'
-  
-      this.statusCode = statusCode
-  
-      Error.captureStackTrace(this, this.constructor)
-    }
+  constructor(statusCode, message, errorCode = 'ERROR_REQUEST') {
+      super(message);
+      
+      this.name = 'ApiError';
+      this.statusCode = statusCode;
+      this.errorCode = errorCode; 
+      
+      Error.captureStackTrace(this, this.constructor);
   }
-  
-  export default ApiError
+}
+
+export default ApiError;

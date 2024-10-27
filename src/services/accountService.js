@@ -2,8 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import Account from "../models/account";
 import jwt from "jsonwebtoken";
 import { getUserIdFromToken } from "../config/jwtProvider";
-import { addOTP, verifyOTP, removeOTP, checkotp } from '../utils/otpStore';
-import { generateOTP, sendOTP } from '../utils/mailler'
+import { addOTP, verifyOTP, removeOTP, checkotp } from "../utils/otpStore";
+import { generateOTP, sendOTP } from "../utils/mailler";
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
@@ -43,7 +43,7 @@ const getList = async (
   limit = 10,
   phonenumber = null,
   state = null,
-  role=null
+  role = null
 ) => {
   const skip = (page - 1) * limit;
   let searchQuery = {};
@@ -60,14 +60,12 @@ const getList = async (
   const totalAccount = await Account.countDocuments(searchQuery);
   const totalPages = Math.ceil(totalAccount / limit);
   return {
-    
-      accounts,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalAccount,
-      },
-    
+    accounts,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalAccount,
+    },
   };
 };
 const updateAccount = async (id, reqBody) => {
@@ -172,10 +170,10 @@ const getById = async (id) => {
     throw new Error(error.message);
   }
 };
-const requestOTP  = async (req, res, next) => {
+const requestOTP = async (req, res, next) => {
   const { email } = req.body;
   const otp = generateOTP();
-  const expiresAt = Date.now() + 5 * 60 * 1000; 
+  const expiresAt = Date.now() + 5 * 60 * 1000;
   try {
     await sendOTP(email, otp);
     addOTP(email, otp, expiresAt);
@@ -190,8 +188,38 @@ const verifyOTPAndCreate = async (req, res, next) => {
     const createAccount = await createNew(req.body);
     return createAccount;
   } else {
-    throw new Error('OTP không hợp lệ hoặc đã hết hạn!' );
+    throw new Error("OTP không hợp lệ hoặc đã hết hạn!");
   }
+};
+
+const resetPassword = async (phonenumber, email) => {
+  const acc = await Account.findOne({ phonenumber, email });
+  if (!acc) throw new Error("Tài khoản không tồn tại");
+
+  const otp = generateOTP();
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+
+  await sendOTP(email, otp);
+  addOTP(email, otp, expiresAt);
+};
+
+const verifyOTPAndChangePassword = async (req, res, next) => {
+  const { phonenumber, email, otp, newPassword } = req.body;
+  if (!verifyOTP(email, otp)) {
+    throw new Error("OTP không hợp lệ hoặc đã hết hạn!");
+  }
+
+  const acc = await Account.findOneAndUpdate(
+    { phonenumber, email }, 
+    { password: newPassword }, 
+    { new: true } 
+  );
+
+  if (!acc) {
+    throw new Error("Người dùng không tồn tại!");
+  }
+
+  return acc;
 };
 
 export const accountService = {
@@ -206,5 +234,7 @@ export const accountService = {
   deleteAccount,
   unblockAccount,
   requestOTP,
-  verifyOTPAndCreate
+  verifyOTPAndCreate,
+  resetPassword,
+  verifyOTPAndChangePassword
 };

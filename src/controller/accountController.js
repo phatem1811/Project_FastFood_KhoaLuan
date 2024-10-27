@@ -20,6 +20,17 @@ const requestOTP = async (req, res, next) => {
     next(error);
   }
 };
+const resetPassword = async (req, res, next) => {
+  const { phonenumber, email } = req.body;
+  try {
+    await accountService.resetPassword(phonenumber, email);
+    res
+    .status(StatusCodes.OK)
+    .json({ message: "Gửi OTP thành công" });
+  } catch (error) {
+    next(error);
+  }
+};
 const verifyOTP = async (req, res, next) => {
   try {
     const createAccount = await accountService.verifyOTPAndCreate(req);
@@ -28,6 +39,15 @@ const verifyOTP = async (req, res, next) => {
     next(error);
   }
 };
+const verifyOTPAndChangePassword = async (req, res, next) => {
+  try {
+    const updateAcc = await accountService.verifyOTPAndChangePassword(req);
+    res.status(StatusCodes.OK).json({ updateAcc });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 const login = async (req, res, next) => {
@@ -153,5 +173,7 @@ export const accountController = {
   deleteAccount,
   unblockAccount,
   requestOTP,
-  verifyOTP
+  verifyOTP,
+  resetPassword,
+  verifyOTPAndChangePassword
 };

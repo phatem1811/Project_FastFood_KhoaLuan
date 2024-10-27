@@ -26,6 +26,8 @@ Router.route("/get/:id").get(accountController.getById);
 
 Router.route("/login").post(accountController.login);
 Router.route("/send-otp").post(accountValidation.createAccount, accountController.requestOTP);
+Router.route("/reset-password").post(accountValidation.resetPassword, accountController.resetPassword);
+Router.route("/verify-change-password").post( accountController.verifyOTPAndChangePassword);
 Router.route("/verify-otp").post(accountController.verifyOTP);
 // Router.post("/",  accountController.createAccount );
 

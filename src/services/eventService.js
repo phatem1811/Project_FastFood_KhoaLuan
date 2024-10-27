@@ -1,10 +1,10 @@
 import { StatusCodes } from "http-status-codes";
-import Event from '../models/event';
-import Product from '../models/product';
+import Event from "../models/event";
+import Product from "../models/product";
 require("dotenv").config();
 const createNew = async (reqBody) => {
   try {
-    const createNew= new Event(reqBody);
+    const createNew = new Event(reqBody);
     const save = await createNew.save();
     return save;
   } catch (error) {
@@ -23,26 +23,43 @@ const getList = async () => {
 const updateNew = async (id, reqBody) => {
   try {
     const products = reqBody.products;
-    const updated = await Event.findByIdAndUpdate(id, reqBody, {
+    const isActive = reqBody.isActive;
+
+    let updateData = { ...reqBody };
+    if (isActive === false) {
+      updateData.products = [];
+    }
+
+    const updated = await Event.findByIdAndUpdate(id, updateData, {
       new: true,
     });
+    if (isActive === false) {
+      await Product.updateMany({ event: updated._id }, [
+        {
+          $set: {
+            event: null, 
+            currentPrice: "$price", 
+          },
+        },
+      ]);
+    }
 
     if (products && products.length > 0) {
-    
       const discountPercent = updated.discountPercent;
-      await Promise.all(products.map(async (productId) => {
-        const product = await Product.findById(productId);
-        
-        if (product) {
-          const discount = (product.currentPrice * discountPercent) / 100;
-          const newCurrentPrice = product.currentPrice - discount;
+      await Promise.all(
+        products.map(async (productId) => {
+          const product = await Product.findById(productId);
 
-          await Product.findByIdAndUpdate(
-            productId,
-            { $set: { event: updated._id, currentPrice: newCurrentPrice } }
-          );
-        }
-      }));
+          if (product) {
+            const discount = (product.currentPrice * discountPercent) / 100;
+            const newCurrentPrice = product.currentPrice - discount;
+
+            await Product.findByIdAndUpdate(productId, {
+              $set: { event: updated._id, currentPrice: newCurrentPrice },
+            });
+          }
+        })
+      );
     }
     if (!updated) {
       throw new Error("Không tìm thấy sự kiện.");
@@ -56,7 +73,7 @@ const updateNew = async (id, reqBody) => {
 //   try {
 //     const updatedAccount = await Account.findByIdAndUpdate(
 //       id,
-//       { state: true }, 
+//       { state: true },
 //       { new: true }
 //     );
 
@@ -70,12 +87,11 @@ const updateNew = async (id, reqBody) => {
 //   }
 // };
 
-
 const deleteEvent = async (id) => {
   try {
     const updated = await Event.findByIdAndUpdate(
       id,
-      { isActive: false }, 
+      { isActive: false },
       { new: true }
     );
 
@@ -88,7 +104,6 @@ const deleteEvent = async (id) => {
     throw error;
   }
 };
-
 
 const getById = async (id) => {
   try {

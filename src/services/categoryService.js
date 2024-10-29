@@ -1,4 +1,5 @@
 import Category from "../models/category";
+import Product from "../models/product";
 
 const createNew = async (reqBody) => {
   try {
@@ -51,7 +52,15 @@ const updateNew = async (id, reqBody) => {
       if (!updateCategory) {
         throw new Error("Không tìm thấy category.");
       }
+
+      if (reqBody.isActive === false) {
+        await Category.findByIdAndUpdate(id, { products: [] }, { new: true });
+        await Product.updateMany(
+          { category: id },
+          { $set: { category: null } }
+        );
       return updateCategory;
+      }
     } catch (error) {
       throw error;
     }

@@ -27,11 +27,8 @@ const CreateProduct = async (req, res, next) => {
                 'any.required': 'Giá sản phẩm là bắt buộc',
             }),
 
-        category: Joi.string().required().trim()
-            .messages({
-                'string.empty': 'Danh mục không được để trống',
-                'any.required': 'Danh mục là bắt buộc',
-            }),
+        category: Joi.string().optional().trim(),
+
         event: Joi.string().optional().trim(),
 
     });

@@ -58,9 +58,28 @@ const updateNew = async (id, reqBody, imagePath) => {
         currentPrice = currentPrice - discount;
       }
     }
-    reqBody.currentPrice = currentPrice;
 
     const updatedProduct = await Product.findByIdAndUpdate(id, reqBody, { new: true });
+    
+
+    reqBody.currentPrice = currentPrice;
+
+    const oldCategoryId = product.category;
+    if (reqBody.category) {
+      if (oldCategoryId && oldCategoryId.toString() !== reqBody.category) {
+        await Category.findByIdAndUpdate(
+          oldCategoryId,
+          { $pull: { products: updatedProduct._id } }, 
+          { new: true }
+        );
+      }
+
+      await Category.findByIdAndUpdate(
+        reqBody.category,
+        { $addToSet: { products: updatedProduct._id } },
+        { new: true }
+      );
+    }
     if (!updatedProduct) {
       throw new Error("Không thể cập nhật sản phẩm.");
     }

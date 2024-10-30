@@ -1,27 +1,24 @@
-import express from 'express';
+import express from "express";
 
-import { productController } from '../../controller/productController';
+import { productController } from "../../controller/productController";
 import { productValidation } from "../../validations/productValidation";
 
-const multer = require('multer');
-const path = require('path');
+const multer = require("multer");
+const path = require("path");
 const Router = express.Router();
-const cloudinary = require('../../config/config.cloundinary'); 
+const cloudinary = require("../../config/config.cloundinary");
 
-
-
-
-const storage =   multer.diskStorage({
+const storage = multer.diskStorage({
   // destination: function (req, file, callback) {
   //   callback(null, './uploads/');
   // },
   filename: function (req, file, callback) {
     callback(null, file.originalname);
-  }
+  },
 });
-const upload = multer({ storage : storage});
+const upload = multer({ storage: storage });
 
-Router.post('/file-upload', upload.single('file'), (req, res) => {
+Router.post("/file-upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
@@ -32,38 +29,34 @@ Router.post('/file-upload', upload.single('file'), (req, res) => {
     }
     res.status(200).json({
       message: "File uploaded successfully to Cloudinary.",
-      url: result.url 
+      url: result.url,
     });
   });
 });
 
-Router.route("/list")
-    .get( productController.getList)
+Router.route("/list").get(productController.getList);
 
-Router.route("/create")    
-    .post(productValidation.CreateProduct,productController.createNew)
+Router.route("/create").post(
+  productValidation.CreateProduct,
+  productController.createNew
+);
 
-Router.route("/:id")
-    .put(productController.updateNew);
+Router.route("/:id").put(productController.updateNew);
 
-Router.route("/category/:categoryId") 
-    .get(productController.getProductsByCategory); 
+Router.route("/category/:categoryId").get(
+  productController.getProductsByCategory
+);
 
-Router.route("/delete/:id")
-    .put(productController.deleteProduct);
+Router.route("/delete/:id").put(productController.deleteProduct);
 
-Router.route("/unblock/:id")
-    .put(productController.unblockProduct);
-  
-Router.route("/get/:id")
-    .get(productController.getById);
+Router.route("/harddelete/:id").delete(productController.hardDeleteProduct);
 
-Router.route("/search")
-    .get(productController.searchProduct);
+Router.route("/unblock/:id").put(productController.unblockProduct);
 
-Router.route("/listpage")
-    .get(productController.getProductListPage);
-    
+Router.route("/get/:id").get(productController.getById);
 
+Router.route("/search").get(productController.searchProduct);
+
+Router.route("/listpage").get(productController.getProductListPage);
 
 export const productRoute = Router;

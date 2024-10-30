@@ -65,7 +65,15 @@ const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
-
+const hardDeleteProduct = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const deleted = await productService.hardDeleteProduct(id);
+    res.status(StatusCodes.OK).json({ message: "Xóa sản phẩm thành công", deleted });
+  } catch (error) {
+    next(error);
+  }
+};
 const getById = async (req, res, next) => {
   try {
     const { id } = req.params; 
@@ -110,7 +118,7 @@ export const getProductListPage = async (req, res, next) => {
 
 
 export const productController = {
-    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage
+    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage, hardDeleteProduct
 }
 
 

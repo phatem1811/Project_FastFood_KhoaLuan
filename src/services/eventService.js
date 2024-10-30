@@ -44,6 +44,16 @@ const updateNew = async (id, reqBody) => {
       ]);
     }
 
+    const currentProducts = await Product.find({ event: updated._id }).select('_id');
+
+    const removedProducts = currentProducts.filter(product => !products.includes(product._id.toString()));
+    if (removedProducts.length > 0) {
+      await Product.updateMany(
+        { _id: { $in: removedProducts.map(product => product._id) } },
+        { $set: { event: null } }
+      );
+    }
+
     if (products && products.length > 0) {
       const discountPercent = updated.discountPercent;
       await Promise.all(
@@ -105,6 +115,37 @@ const deleteEvent = async (id) => {
   }
 };
 
+const hardDeleteEvent = async (id) => {
+  try {
+    // Tìm và xóa sự kiện
+    const event = await Event.findByIdAndDelete(id);
+
+    if (!event) {
+      throw new Error("Không tìm thấy sự kiện.");
+    }
+
+    await Product.updateMany(
+      { event: id },
+      [
+        {
+          $set: {
+            event: null,        
+            currentPrice: "$price", 
+          },
+        },
+      ]
+    );
+
+    return {
+      message: "Sự kiện đã được xóa thành công.",
+      event,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 const getById = async (id) => {
   try {
     const event = await Event.findById(id);
@@ -123,4 +164,5 @@ export const eventService = {
   updateNew,
   getById,
   deleteEvent,
+  hardDeleteEvent
 };

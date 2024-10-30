@@ -41,6 +41,17 @@ const deleteEvent = async (req, res, next) => {
     }
   };
 
+  const hardDeleteEvent = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const deleted = await eventService.hardDeleteEvent(id);
+      res.status(StatusCodes.OK).json({ message: "xóa sự kiện thành công", deleted });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
 
 //   const unblockCategory = async (req, res, next) => {
 //     const { id } = req.params;
@@ -68,7 +79,7 @@ const deleteEvent = async (req, res, next) => {
   
 
 export const eventController = {
-    createNew,  getList, updateNew, deleteEvent, getById
+    createNew,  getList, updateNew, deleteEvent, getById, hardDeleteEvent
 }
 
 

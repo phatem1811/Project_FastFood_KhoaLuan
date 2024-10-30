@@ -39,6 +39,16 @@ const updateNew = async (req, res, next) => {
     }
   };
 
+  const hardDeleteCategory = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const deletecate = await categoryService.harddeleteCategory(id);
+      res.status(StatusCodes.OK).json({ message: "Xóa danh mục thành công", deletecate });
+    } catch (error) {
+      next(error);
+    }
+  };
+
 
   const unblockCategory = async (req, res, next) => {
     const { id } = req.params;
@@ -66,7 +76,7 @@ const updateNew = async (req, res, next) => {
   
 
 export const categoryController = {
-    createNew,  getList, updateNew, deleteCategory, unblockCategory, getById
+    createNew,  getList, updateNew, deleteCategory, unblockCategory, getById,hardDeleteCategory
 }
 
 

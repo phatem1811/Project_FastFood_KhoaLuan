@@ -146,6 +146,28 @@ const deleteProduct = async (id) => {
   }
 };
 
+
+const hardDeleteProduct = async (id) => {
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm.");
+    }
+    await Product.findByIdAndDelete(id);
+    if (product.category) {
+      await Category.findByIdAndUpdate(
+        product.category,
+        { $pull: { products: product._id } }, 
+        { new: true }
+      );
+    }
+
+    return { message: "Sản phẩm đã được xóa thành công." };
+  } catch (error) {
+    throw error;
+  }
+};
+
 const searchProductByName = async (name) => {
   try {
    
@@ -198,5 +220,5 @@ const getListPage = async (page = 1, limit = 5, searchTerm = "",  cateId = null,
 
 
 export const productService = {
-  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,searchProductByName,getListPage
+  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,searchProductByName,getListPage, hardDeleteProduct
 };

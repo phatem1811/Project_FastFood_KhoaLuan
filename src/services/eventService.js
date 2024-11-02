@@ -34,14 +34,18 @@ const updateNew = async (id, reqBody) => {
       new: true,
     });
     if (isActive === false) {
-      await Product.updateMany({ event: updated._id }, [
-        {
-          $set: {
-            event: null, 
-            currentPrice: "$price", 
+      await Product.updateMany(
+        { event: id },
+        [
+          {
+            $set: {
+              event: null,        
+              currentPrice: "$price", 
+            },
           },
-        },
-      ]);
+        ]
+      );
+  
     }
 
     const currentProducts = await Product.find({ event: updated._id }).select('_id');
@@ -50,7 +54,14 @@ const updateNew = async (id, reqBody) => {
     if (removedProducts.length > 0) {
       await Product.updateMany(
         { _id: { $in: removedProducts.map(product => product._id) } },
-        { $set: { event: null } }
+        [
+          { 
+            $set: { 
+              event: null,
+              currentPrice: "$price"  
+            }
+          }
+        ]
       );
     }
 
@@ -61,8 +72,8 @@ const updateNew = async (id, reqBody) => {
           const product = await Product.findById(productId);
 
           if (product) {
-            const discount = (product.currentPrice * discountPercent) / 100;
-            const newCurrentPrice = product.currentPrice - discount;
+            const discount = (product.price * discountPercent) / 100;
+            const newCurrentPrice = product.price - discount;
 
             await Product.findByIdAndUpdate(productId, {
               $set: { event: updated._id, currentPrice: newCurrentPrice },

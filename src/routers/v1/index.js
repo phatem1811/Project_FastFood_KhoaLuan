@@ -6,6 +6,7 @@ import { eventRoute } from './eventRouter';
 import { billRoute } from './billRouter';
 import { voucherRoute } from './voucherRouter';
 import { ingredientRoute } from './ingredientRouter';
+import { optionalRoute } from './optionalRouter';
 
 const Router = express.Router();
 
@@ -20,5 +21,6 @@ Router.use('/event', eventRoute);
 Router.use('/bill', billRoute);
 Router.use('/voucher', voucherRoute);
 Router.use('/ingredient', ingredientRoute);
+Router.use('/optional', optionalRoute);
 
 export const APIs = Router;

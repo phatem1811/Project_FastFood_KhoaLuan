@@ -47,31 +47,20 @@ const updateNew = async (id, reqBody) => {
 
 const deleteOptional = async (id) => {
   try {
-    const deletedOptional = await Optional.findByIdAndDelete(id);
-    if (!deletedOptional) {
+
+    const optionalToDelete = await Optional.findById(id);
+    if (!optionalToDelete) {
       throw new Error("Không tìm thấy tùy chọn để xóa.");
     }
+
+    await Choice.deleteMany({ _id: { $in: optionalToDelete.choices } });
+
+    const deletedOptional = await Optional.findByIdAndDelete(id);
     return deletedOptional;
   } catch (error) {
     throw new Error(error.message);
   }
 };
-
-// // Giả sử chúng ta muốn tính tổng chi phí của các lựa chọn trong Optional nếu có (ví dụ dựa trên giá của mỗi choice)
-// const getTotalCostOfChoices = async (optionalId) => {
-//   try {
-//     const optional = await Optional.findById(optionalId).populate("choices");
-//     if (!optional) {
-//       throw new Error("Không tìm thấy tùy chọn.");
-//     }
-
-//     const totalCost = optional.choices.reduce((acc, choice) => acc + (choice.price || 0), 0);
-//     return { optionalId, totalCost };
-//   } catch (error) {
-//     throw new Error(error.message);
-//   }
-// };
-
 export const optionalService = {
   createNew,
   getList,

@@ -7,6 +7,7 @@ import { billRoute } from './billRouter';
 import { voucherRoute } from './voucherRouter';
 import { ingredientRoute } from './ingredientRouter';
 import { optionalRoute } from './optionalRouter';
+import { choiceRoute } from './choiceRouter';
 
 const Router = express.Router();
 
@@ -22,5 +23,6 @@ Router.use('/bill', billRoute);
 Router.use('/voucher', voucherRoute);
 Router.use('/ingredient', ingredientRoute);
 Router.use('/optional', optionalRoute);
+Router.use('/choice', choiceRoute);
 
 export const APIs = Router;

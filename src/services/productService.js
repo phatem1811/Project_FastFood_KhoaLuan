@@ -37,7 +37,13 @@ const getList = async () => {
   try {
     const products = await Product.find({})
       .populate('category',  '_id name')
-      // .populate('event', '_id name');
+      .populate("event")           
+      .populate({
+        path: "options",
+        populate: {
+          path: "choices",       
+        },
+      });
     return products;
   } catch (error) {
     throw error;
@@ -57,6 +63,10 @@ const updateNew = async (id, reqBody, imagePath) => {
         const discount = (currentPrice * event.discountPercent) / 100;
         currentPrice = currentPrice - discount;
       }
+    }
+
+    if (reqBody.options && Array.isArray(reqBody.options)) {
+      product.options = reqBody.options;
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(id, reqBody, { new: true });
@@ -100,10 +110,21 @@ const getProductsByCategory = async (categoryId) => {
 
 const getById = async (id) => {
   try {
-    const product = await Product.findById(id);
+    const product = await Product.findById(id)
+      .populate("category")       
+      .populate("event")           
+      .populate({
+        path: "options",
+        populate: {
+          path: "choices",       
+        },
+      });
+
+
     if (!product) {
       throw new Error("Không tìm thấy sản phẩm");
     }
+    
     return product;
   } catch (error) {
     throw new Error(error.message);

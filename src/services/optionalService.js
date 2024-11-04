@@ -1,5 +1,6 @@
 import Optional from "../models/Optional";
 import Choice from "../models/choice";
+import Product from "../models/product";
 const createNew = async (reqBody) => {
   try {
     const newOptional = new Optional(reqBody);
@@ -54,6 +55,10 @@ const deleteOptional = async (id) => {
     }
 
     await Choice.deleteMany({ _id: { $in: optionalToDelete.choices } });
+    await Product.updateMany(
+      { options: id }, 
+      { $pull: { options: id } } 
+    );
 
     const deletedOptional = await Optional.findByIdAndDelete(id);
     return deletedOptional;

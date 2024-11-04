@@ -12,15 +12,23 @@ const createNew = async (billData) => {
     const lineItems = await Promise.all(
       billData.lineItems.map(async (item) => {
         const newLineItem = new Lineitem({
+          
           product: item.product,
           quantity: item.quantity,
           subtotal: item.subtotal,
+          options: item.options ? item.options.map(option => ({
+            option: option.optionId,
+            choices: option.choiceId
+          })) : []
         });
-
+        
         await newLineItem.save({ session });
         return newLineItem._id;
       })
+      
+  
     );
+
 
     const newBill = new Bill({
       ship: billData.ship,
@@ -179,9 +187,17 @@ const getById = async (id) => {
   try {
     const bill = await Bill.findById(id).populate({
       path: "lineItem",
-      populate: {
-        path: "product", 
-      },
+      populate: [
+        {
+          path: "product",
+        },
+        {
+          path: "options.option", 
+        },
+        {
+          path: "options.choices", 
+        },
+      ],
     });
 
     if (!bill) {

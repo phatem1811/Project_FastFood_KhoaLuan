@@ -16,6 +16,19 @@ const lineitemSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
+    options: [
+      {
+        _id: false,
+        option: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Optional",
+        },
+        choices: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Choice",
+        },
+      },
+    ],
   },
   {
     timestamps: true,

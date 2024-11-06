@@ -9,7 +9,8 @@ const getList = async (req, res, next) => {
       const limit = parseInt(req.query.size) || 10;
       const phone_shipment = req.query.phone || ""; 
       const accountId = req.query.accountId || null;
-      const data = await billService.getList(page,limit,phone_shipment, accountId);
+      const state = req.query.state || null;
+      const data = await billService.getList(page,limit,phone_shipment, accountId, state);
       res.status(StatusCodes.OK).json({ message: "get list sucessful", data });
   }
   catch (error) {

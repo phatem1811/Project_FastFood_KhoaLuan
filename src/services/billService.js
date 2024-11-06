@@ -81,7 +81,8 @@ const getList = async (
   page = 1,
   limit = 10,
   phone_shipment = null,
-  accountId = null
+  accountId = null,
+  state = null
 ) => {
   try {
     const skip = (page - 1) * limit;
@@ -95,6 +96,9 @@ const getList = async (
       searchQuery.account = accountId;
     }
 
+    if (state !== null) {
+      searchQuery.state = state;
+    }
     const bills = await Bill.find(searchQuery)
       .skip(skip)
       .limit(limit)
@@ -117,9 +121,11 @@ const getList = async (
 
 const updateBill = async (id, state) => {
   try {
+
+    const updateData = state === 4 ? { state, isPaid: true } : { state };
     const updatedBill = await Bill.findByIdAndUpdate(
       id,
-      { state },
+      updateData,
       { new: true }
     );
 

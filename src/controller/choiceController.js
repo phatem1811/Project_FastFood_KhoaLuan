@@ -54,7 +54,6 @@ const getById = async (req, res, next) => {
 };
 const getChoicesByOptionalId = async (req, res, next) => {
     const { optionalId } = req.query; 
-    console.log("check", optionalId);
     try {
       const choices = await choiceService.getChoicesByOptionalId(optionalId);
       

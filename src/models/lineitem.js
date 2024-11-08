@@ -27,6 +27,9 @@ const lineitemSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Choice",
         },
+        addPrice: {
+          type: Number,
+        },
       },
     ],
   },

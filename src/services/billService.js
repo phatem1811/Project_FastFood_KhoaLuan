@@ -18,7 +18,8 @@ const createNew = async (billData) => {
           subtotal: item.subtotal,
           options: item.options ? item.options.map(option => ({
             option: option.optionId,
-            choices: option.choiceId
+            choices: option.choiceId,
+            addPrice: option.addPrice || 0 
           })) : []
         });
         

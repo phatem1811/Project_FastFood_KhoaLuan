@@ -7,7 +7,6 @@ import Product from "../models/product";
 const createNew = async (billData) => {
   const session = await mongoose.startSession();
   let newBill; 
-
   try {
     await session.withTransaction(async () => {
       const lineItems = await Promise.all(
@@ -115,6 +114,78 @@ const getList = async (
     };
   } catch (error) {
     throw new Error(error.message);
+  }
+};
+
+
+
+export const createBillSocket = async (billData) => {
+  const session = await mongoose.startSession();
+  let newBill;
+  try {
+    await session.withTransaction(async () => {
+      // Tạo các lineItems từ billData
+      const lineItems = await Promise.all(
+        billData.lineItems.map(async (item) => {
+          const filteredOptions = (item.options || []).filter(option => option.optionId && option.choiceId);
+
+          const newLineItem = new Lineitem({
+            product: item.product,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+            options: filteredOptions.map(option => ({
+              option: option.optionId,
+              choices: option.choiceId,
+              addPrice: option.addPrice || 0,
+            })),
+          });
+
+          await newLineItem.save({ session });
+          return newLineItem._id;
+        })
+      );
+
+      // Tạo hóa đơn mới
+      newBill = new Bill({
+        ship: billData.ship,
+        fullName: billData.fullName,
+        total_price: billData.total_price,
+        address_shipment: billData.address_shipment,
+        phone_shipment: billData.phone_shipment,
+        isPaid: billData.isPaid,
+        lineItem: lineItems,
+        pointDiscount: billData.pointDiscount || 0,
+        voucher: billData.voucher || null,
+        note: billData.note || null,
+        account: billData.account || null,
+      });
+
+      await newBill.save({ session });
+
+      const account = await Account.findById(billData.account).session(session);
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
+      const pointsToAdd = Math.floor(newBill.total_price / 100);
+      const pointDiscount = billData.pointDiscount || 0;
+      if (account.point < pointDiscount) {
+        throw new Error('Not enough points for discount');
+      }
+
+      const newPoint = account.point - pointDiscount + pointsToAdd;
+      await Account.findByIdAndUpdate(
+        billData.account,
+        { $push: { bills: newBill._id }, point: newPoint },
+        { session, new: true }
+      );
+    });
+
+    session.endSession();
+    return newBill; // Trả về hóa đơn mới tạo
+  } catch (error) {
+    session.endSession();
+    throw error;
   }
 };
 
@@ -259,5 +330,6 @@ export const billService = {
   updateBill,
   getById,
   getListByDate,
-  getMonthlyRevenue
+  getMonthlyRevenue,
+  createBillSocket
 };

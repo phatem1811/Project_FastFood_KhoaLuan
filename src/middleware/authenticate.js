@@ -10,9 +10,7 @@ export const authenticate = async (req, res, next) => {
     }
 
     const userId = getUserIdFromToken(token);
-    console.log("checkk",token)
     const user = await accountService.findUserById(userId);
-    console.log("user",user)
 
     req.user = user;
   } catch (error) {

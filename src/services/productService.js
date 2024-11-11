@@ -68,11 +68,11 @@ const updateNew = async (id, reqBody, imagePath) => {
     if (reqBody.options && Array.isArray(reqBody.options)) {
       product.options = reqBody.options;
     }
-
+    reqBody.currentPrice = currentPrice;
     const updatedProduct = await Product.findByIdAndUpdate(id, reqBody, { new: true });
     
 
-    reqBody.currentPrice = currentPrice;
+
 
     const oldCategoryId = product.category;
     if (reqBody.category) {

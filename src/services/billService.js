@@ -120,7 +120,6 @@ const getList = async (
 };
 
 
-
 export const createBillSocket = async (billData) => {
   const session = await mongoose.startSession();
   let newBill;
@@ -147,7 +146,6 @@ export const createBillSocket = async (billData) => {
         })
       );
 
-      // Tạo hóa đơn mới
       newBill = new Bill({
         ship: billData.ship,
         fullName: billData.fullName,
@@ -164,23 +162,26 @@ export const createBillSocket = async (billData) => {
 
       await newBill.save({ session });
 
-      const account = await Account.findById(billData.account).session(session);
-      if (!account) {
-        throw new Error('Account not found');
-      }
 
-      const pointsToAdd = Math.floor(newBill.total_price / 100);
-      const pointDiscount = billData.pointDiscount || 0;
-      if (account.point < pointDiscount) {
-        throw new Error('Not enough points for discount');
-      }
+      if (billData.account) {
+        const account = await Account.findById(billData.account).session(session);
+        if (!account) {
+          throw new Error('Account not found');
+        }
 
-      const newPoint = account.point - pointDiscount + pointsToAdd;
-      await Account.findByIdAndUpdate(
-        billData.account,
-        { $push: { bills: newBill._id }, point: newPoint },
-        { session, new: true }
-      );
+        const pointsToAdd = Math.floor(newBill.total_price / 100);
+        const pointDiscount = billData.pointDiscount || 0;
+        if (account.point < pointDiscount) {
+          throw new Error('Not enough points for discount');
+        }
+
+        const newPoint = account.point - pointDiscount + pointsToAdd;
+        await Account.findByIdAndUpdate(
+          billData.account,
+          { $push: { bills: newBill._id }, point: newPoint },
+          { session, new: true }
+        );
+      }
     });
 
     session.endSession();
@@ -190,6 +191,7 @@ export const createBillSocket = async (billData) => {
     throw error;
   }
 };
+
 
 const updateBill = async (id, state) => {
   try {

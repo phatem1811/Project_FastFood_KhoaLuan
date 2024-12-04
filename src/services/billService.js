@@ -254,6 +254,7 @@ const getListByDate = async () => {
       };
     });
 
+    productSale.sort((a, b) => b.quantity - a.quantity);
 
     return {
       productSale

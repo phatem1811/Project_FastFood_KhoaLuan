@@ -14,9 +14,9 @@ const app = express();
 const server = http.createServer(app);
 
 const payos = new PayOS(
-  "6124fa93-9611-43a9-b53a-3720c06a7be3",
-  "2e232dca-c8ab-4d0c-bff6-c09d57f78fc9",
-  "ebf1d352e8ab9b15e4ffcd27f76b4d96741e750f1e12449222b8652dee266bb5"
+  process.env.PAYOS_CLIENT_ID,
+  process.env.PAYOS_API_KEY,
+  process.env.PAYOS_CHECKSUM_KEY
 );
 
 const io = socketIo(server, {

@@ -183,11 +183,14 @@ const requestOTP = async (req, res, next) => {
 };
 const verifyOTPAndCreate = async (req, res, next) => {
   const { email, otp } = req.body;
+ 
 
   if (verifyOTP(email, otp)) {
+
     const createAccount = await createNew(req.body);
     return createAccount;
   } else {
+    console.log("check screen",otp );
     throw new Error("OTP không hợp lệ hoặc đã hết hạn!");
   }
 };

@@ -6,6 +6,7 @@ export const addOTP = (email, otp, expiresAt) => {
 };
 
 export const verifyOTP = (email, otp) => {
+  console.log("check otp",otp );
   const otpData = otpStore[email];
   if (otpData && otpData.otp === otp && Date.now() < otpData.expiresAt) {
     delete otpStore[email]; 

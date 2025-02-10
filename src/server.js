@@ -19,6 +19,11 @@ const payos = new PayOS(
   process.env.PAYOS_CHECKSUM_KEY
 );
 
+app.use(cors({
+  origin: '*', 
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 const io = socketIo(server, {
   cors: {
     origin: "http://localhost:3000",
@@ -31,7 +36,6 @@ const port = 8080;
 
 connection();
 
-app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -99,6 +103,6 @@ app.post('/create-payment-link', async (req, res) => {
 app.use(errorHandlingMiddleware);
 
 // Khởi động server
-server.listen(port, hostname, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`I am running at http://${hostname}:${port}`);
 });

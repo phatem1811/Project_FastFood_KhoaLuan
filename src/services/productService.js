@@ -1,6 +1,7 @@
 import Product from "../models/product";
 import Event from "../models/event";
 import Category from "../models/category";
+import Bill from "../models/bill";
 const createNew = async (reqBody, imagePath) => {
   try {
     let currentPrice = reqBody.price;
@@ -238,8 +239,52 @@ const getListPage = async (page = 1, limit = 5, searchTerm = "",  cateId = null,
     throw error;
   }
 };
+const getTop10ProductSales = async () => {
+  try {
+    const searchQuery = {};
+
+    const bills = await Bill.find(searchQuery)
+      .populate("lineItem")
+      .sort({ createdAt: -1 });
+
+    const productStats = {};
+    bills.forEach((bill) => {
+      bill.lineItem.forEach((item) => {
+        const productId = item.product.toString();
+        const quantity = item.quantity;
+
+        if (productStats[productId]) {
+          productStats[productId] += quantity;
+        } else {
+          productStats[productId] = quantity;
+        }
+      });
+    });
+
+    const productIds = Object.keys(productStats);
+    const products = await Product.find({ _id: { $in: productIds } });
+    const productSale = products.map((product) => {
+      return {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        picture: product.picture,
+        quantity: productStats[product._id.toString()]
+      };
+    });
+
+    productSale.sort((a, b) => b.quantity - a.quantity);
+    const top10ProductSale = productSale.slice(0, 10);
+
+    return top10ProductSale;
+    
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 
 
 export const productService = {
-  createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,searchProductByName,getListPage, hardDeleteProduct
+  getTop10ProductSales, createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,searchProductByName,getListPage, hardDeleteProduct
 };

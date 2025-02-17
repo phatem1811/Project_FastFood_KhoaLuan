@@ -11,14 +11,23 @@ const  createNew = async (req, res, next) => {
     catch (error) { next(error); }
 }
 
-const getList = async (req, res, next) => {
+const getTop10ProductSales = async (req, res, next) => {
     try {
-        const products = await productService.getList();
+        const products = await productService.getTop10ProductSales();
         res.status(StatusCodes.OK).json({ message: "Get list successfull", products });
     }
     catch (error) {
         next(error);
     }
+}
+const getList = async (req, res, next) => {
+  try {
+      const products = await productService.getList();
+      res.status(StatusCodes.OK).json({ message: "Get list successfull", products });
+  }
+  catch (error) {
+      next(error);
+  }
 }
 
 const getProductsByCategory = async (req, res, next) => {
@@ -118,7 +127,7 @@ export const getProductListPage = async (req, res, next) => {
 
 
 export const productController = {
-    createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage, hardDeleteProduct
+  getTop10ProductSales, createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage, hardDeleteProduct
 }
 
 

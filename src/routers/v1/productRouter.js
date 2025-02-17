@@ -54,6 +54,7 @@ Router.route("/harddelete/:id").delete(productController.hardDeleteProduct);
 Router.route("/unblock/:id").put(productController.unblockProduct);
 
 Router.route("/get/:id").get(productController.getById);
+Router.route("/getTop10").get(productController.getTop10ProductSales);
 
 Router.route("/search").get(productController.searchProduct);
 

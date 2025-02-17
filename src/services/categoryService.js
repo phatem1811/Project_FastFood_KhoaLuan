@@ -4,6 +4,7 @@ import Product from "../models/product";
 const createNew = async (reqBody) => {
   try {
     const newCategory= new Category(reqBody);
+   
     const saveCategory = await newCategory.save();
     return saveCategory;
   } catch (error) {

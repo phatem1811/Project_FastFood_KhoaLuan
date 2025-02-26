@@ -98,11 +98,21 @@ const getById = async (req, res, next) => {
 
 const searchProduct = async (req, res) => {
   try {
-    const { name } = req.query; 
+    
 
-    const products = await productService.searchProductByName(name);
+    const products = await productService.searchProductByName(req.query);
 
     return res.status(200).json(products);
+  } catch (error) {
+    next(error); 
+  }
+};
+const getSearchHistory = async (req, res) => {
+  try {
+    
+    const history = await productService.getSearchHistory(req.query);
+
+    return res.status(200).json(history);
   } catch (error) {
     next(error); 
   }
@@ -127,7 +137,7 @@ export const getProductListPage = async (req, res, next) => {
 
 
 export const productController = {
-  getTop10ProductSales, createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById, searchProduct, getProductListPage, hardDeleteProduct
+  getTop10ProductSales, createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,getSearchHistory, searchProduct, getProductListPage, hardDeleteProduct
 }
 
 

@@ -2,6 +2,7 @@ import Product from "../models/product";
 import Event from "../models/event";
 import Category from "../models/category";
 import Bill from "../models/bill";
+import SearchHistory from "../models/searchHistory";
 const createNew = async (reqBody, imagePath) => {
   try {
     let currentPrice = reqBody.price;
@@ -23,7 +24,7 @@ const createNew = async (reqBody, imagePath) => {
     if (reqBody.category) {
       await Category.findByIdAndUpdate(
         reqBody.category,
-        { $addToSet: { products: saveNew._id } }, 
+        { $addToSet: { products: saveNew._id } },
         { new: true }
       );
     }
@@ -37,12 +38,12 @@ const createNew = async (reqBody, imagePath) => {
 const getList = async () => {
   try {
     const products = await Product.find({})
-      .populate('category',  '_id name')
-      .populate("event")           
+      .populate("category", "_id name")
+      .populate("event")
       .populate({
         path: "options",
         populate: {
-          path: "choices",       
+          path: "choices",
         },
       });
     return products;
@@ -57,7 +58,7 @@ const updateNew = async (id, reqBody, imagePath) => {
       throw new Error("Không tìm thấy sản phẩm.");
     }
 
-    let currentPrice = reqBody.price || product.price; 
+    let currentPrice = reqBody.price || product.price;
     if (reqBody.event) {
       const event = await Event.findById(reqBody.event);
       if (event && event.discountPercent) {
@@ -70,17 +71,16 @@ const updateNew = async (id, reqBody, imagePath) => {
       product.options = reqBody.options;
     }
     reqBody.currentPrice = currentPrice;
-    const updatedProduct = await Product.findByIdAndUpdate(id, reqBody, { new: true });
-    
-
-
+    const updatedProduct = await Product.findByIdAndUpdate(id, reqBody, {
+      new: true,
+    });
 
     const oldCategoryId = product.category;
     if (reqBody.category) {
       if (oldCategoryId && oldCategoryId.toString() !== reqBody.category) {
         await Category.findByIdAndUpdate(
           oldCategoryId,
-          { $pull: { products: updatedProduct._id } }, 
+          { $pull: { products: updatedProduct._id } },
           { new: true }
         );
       }
@@ -101,42 +101,41 @@ const updateNew = async (id, reqBody, imagePath) => {
   }
 };
 const getProductsByCategory = async (categoryId) => {
-    try {
-      const products = await Product.find({ category: categoryId }); 
-      return products;
-    } catch (error) {
-      throw error;
-    }
+  try {
+    const products = await Product.find({ category: categoryId });
+    return products;
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getById = async (id) => {
   try {
     const product = await Product.findById(id)
-      .populate("category")       
-      .populate("event")           
+      .populate("category")
+      .populate("event")
       .populate({
         path: "options",
         populate: {
-          path: "choices",       
+          path: "choices",
         },
       });
-
 
     if (!product) {
       throw new Error("Không tìm thấy sản phẩm");
     }
-    
+
     return product;
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-const unblockProduct= async (id) => {
+const unblockProduct = async (id) => {
   try {
     const updated = await Product.findByIdAndUpdate(
       id,
-      { isSelling: true }, 
+      { isSelling: true },
       { new: true }
     );
 
@@ -154,7 +153,7 @@ const deleteProduct = async (id) => {
   try {
     const updated = await Product.findByIdAndUpdate(
       id,
-      { isSelling: false }, 
+      { isSelling: false },
       { new: true }
     );
 
@@ -168,7 +167,6 @@ const deleteProduct = async (id) => {
   }
 };
 
-
 const hardDeleteProduct = async (id) => {
   try {
     const product = await Product.findById(id);
@@ -179,7 +177,7 @@ const hardDeleteProduct = async (id) => {
     if (product.category) {
       await Category.findByIdAndUpdate(
         product.category,
-        { $pull: { products: product._id } }, 
+        { $pull: { products: product._id } },
         { new: true }
       );
     }
@@ -190,29 +188,78 @@ const hardDeleteProduct = async (id) => {
   }
 };
 
-const searchProductByName = async (name) => {
+const searchProductByName = async (req, res) => {
   try {
-   
-    const products = await Product.find({
-      name: { $regex: name, $options: 'i' } // 'i' là để không phân biệt hoa thường
-    });
+    const { name, userId, anonymousId } = req;
+
+    if (!name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Thiếu từ khóa tìm kiếm!" });
+    }
+
+    const products = await Product.find({ $text: { $search: name } });
+
+    // await SearchHistory.create({
+    //   keyword: name,
+    //   userId: userId || null,
+    //   anonymousId: anonymousId || null,
+    // });
 
     return products;
   } catch (error) {
-    throw error;
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi server!" });
   }
 };
 
-const getListPage = async (page = 1, limit = 5, searchTerm = "",  cateId = null,  isSelling = null) => {
+const getSearchHistory = async (req, res) => {
+  try {
+    const { anonymousId, userId } = req; // Lấy anonymousId từ query params
+    console.log("check", userId);
+
+    let history =[];
+    if (anonymousId) {
+      console.log("search user");
+      history = await SearchHistory.find({
+        anonymousId: anonymousId.trim(),
+      })
+        .sort({ createdAt: -1 })
+        .limit(10);
+      
+    }
+    else {
+      const history = await SearchHistory.find({
+        account: userId.trim()
+      })
+        .sort({ createdAt: -1 })
+        .limit(10);
+      return history;
+    }
+
+    return history;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi server!" });
+  }
+};
+
+const getListPage = async (
+  page = 1,
+  limit = 5,
+  searchTerm = "",
+  cateId = null,
+  isSelling = null
+) => {
   try {
     const skip = (page - 1) * limit;
     let searchQuery = {};
-    
+
     if (searchTerm) {
-      searchQuery = { name: { $regex: searchTerm, $options: "i" } }; 
+      searchQuery = { name: { $regex: searchTerm, $options: "i" } };
     }
     if (cateId) {
-      searchQuery.category = cateId;  
+      searchQuery.category = cateId;
     }
     if (isSelling !== null) {
       searchQuery.isSelling = isSelling;
@@ -269,7 +316,7 @@ const getTop10ProductSales = async () => {
         name: product.name,
         price: product.price,
         picture: product.picture,
-        quantity: productStats[product._id.toString()]
+        quantity: productStats[product._id.toString()],
       };
     });
 
@@ -277,14 +324,22 @@ const getTop10ProductSales = async () => {
     const top10ProductSale = productSale.slice(0, 10);
 
     return top10ProductSale;
-    
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-
-
 export const productService = {
-  getTop10ProductSales, createNew,  getList, updateNew, getProductsByCategory, unblockProduct, deleteProduct, getById,searchProductByName,getListPage, hardDeleteProduct
+  getTop10ProductSales,
+  createNew,
+  getList,
+  updateNew,
+  getProductsByCategory,
+  unblockProduct,
+  deleteProduct,
+  getById,
+  searchProductByName,
+  getListPage,
+  hardDeleteProduct,
+  getSearchHistory,
 };

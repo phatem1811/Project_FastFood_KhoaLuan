@@ -57,6 +57,7 @@ Router.route("/get/:id").get(productController.getById);
 Router.route("/getTop10").get(productController.getTop10ProductSales);
 
 Router.route("/search").get(productController.searchProduct);
+Router.route("/get-searchHistory").get(productController.getSearchHistory);
 
 Router.route("/listpage").get(productController.getProductListPage);
 

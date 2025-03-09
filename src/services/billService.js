@@ -6,21 +6,23 @@ import Account from "../models/account";
 import Product from "../models/product";
 const createNew = async (billData) => {
   const session = await mongoose.startSession();
-  let newBill; 
+  let newBill;
   try {
     await session.withTransaction(async () => {
       const lineItems = await Promise.all(
         billData.lineItems.map(async (item) => {
-          const filteredOptions = (item.options || []).filter(option => option.optionId && option.choiceId);
+          const filteredOptions = (item.options || []).filter(
+            (option) => option.optionId && option.choiceId
+          );
 
           const newLineItem = new Lineitem({
             product: item.product,
             quantity: item.quantity,
             subtotal: item.subtotal,
-            options: filteredOptions.map(option => ({
+            options: filteredOptions.map((option) => ({
               option: option.optionId,
               choices: option.choiceId,
-              addPrice: option.addPrice || 0 
+              addPrice: option.addPrice || 0,
             })),
           });
 
@@ -44,15 +46,17 @@ const createNew = async (billData) => {
       await newBill.save({ session });
 
       if (billData.account) {
-        const account = await Account.findById(billData.account).session(session);
+        const account = await Account.findById(billData.account).session(
+          session
+        );
         if (!account) {
-          throw new Error('Account not found');
+          throw new Error("Account not found");
         }
 
         const pointsToAdd = Math.floor(newBill.total_price / 100);
         const pointDiscount = billData.pointDiscount || 0;
         if (account.point < pointDiscount) {
-          throw new Error('Not enough points for discount');
+          throw new Error("Not enough points for discount");
         }
 
         const newPoint = account.point - pointDiscount + pointsToAdd;
@@ -68,13 +72,12 @@ const createNew = async (billData) => {
     });
 
     session.endSession();
-    return newBill; 
+    return newBill;
   } catch (error) {
     session.endSession();
     throw error;
   }
 };
-
 
 
 const getList = async (
@@ -119,7 +122,6 @@ const getList = async (
   }
 };
 
-
 export const createBillSocket = async (billData) => {
   const session = await mongoose.startSession();
   let newBill;
@@ -128,13 +130,15 @@ export const createBillSocket = async (billData) => {
       // Tạo các lineItems từ billData
       const lineItems = await Promise.all(
         billData.lineItems.map(async (item) => {
-          const filteredOptions = (item.options || []).filter(option => option.optionId && option.choiceId);
+          const filteredOptions = (item.options || []).filter(
+            (option) => option.optionId && option.choiceId
+          );
 
           const newLineItem = new Lineitem({
             product: item.product,
             quantity: item.quantity,
             subtotal: item.subtotal,
-            options: filteredOptions.map(option => ({
+            options: filteredOptions.map((option) => ({
               option: option.optionId,
               choices: option.choiceId,
               addPrice: option.addPrice || 0,
@@ -162,17 +166,18 @@ export const createBillSocket = async (billData) => {
 
       await newBill.save({ session });
 
-
       if (billData.account) {
-        const account = await Account.findById(billData.account).session(session);
+        const account = await Account.findById(billData.account).session(
+          session
+        );
         if (!account) {
-          throw new Error('Account not found');
+          throw new Error("Account not found");
         }
 
         const pointsToAdd = Math.floor(newBill.total_price / 100);
         const pointDiscount = billData.pointDiscount || 0;
         if (account.point < pointDiscount) {
-          throw new Error('Not enough points for discount');
+          throw new Error("Not enough points for discount");
         }
 
         const newPoint = account.point - pointDiscount + pointsToAdd;
@@ -192,16 +197,12 @@ export const createBillSocket = async (billData) => {
   }
 };
 
-
 const updateBill = async (id, state) => {
   try {
-
     const updateData = state === 4 ? { state, isPaid: true } : { state };
-    const updatedBill = await Bill.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
+    const updatedBill = await Bill.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedBill) {
       throw new Error("Bill không tồn tại");
@@ -221,8 +222,8 @@ const getListByDate = async () => {
     const searchQuery = {
       createdAt: {
         $gte: startDate,
-        $lte: endDate
-      }
+        $lte: endDate,
+      },
     };
 
     const bills = await Bill.find(searchQuery)
@@ -250,14 +251,14 @@ const getListByDate = async () => {
         name: product.name,
         price: product.price,
         picture: product.picture,
-        quantity: productStats[product._id.toString()]
+        quantity: productStats[product._id.toString()],
       };
     });
 
     productSale.sort((a, b) => b.quantity - a.quantity);
 
     return {
-      productSale
+      productSale,
     };
   } catch (error) {
     throw new Error(error.message);
@@ -266,29 +267,28 @@ const getListByDate = async () => {
 
 const getById = async (id) => {
   try {
-    const bill = await Bill.findById(id).populate({
-      path: "lineItem",
-      populate: [
-        {
-          path: "product",
-        },
-        {
-          path: "options.option", 
-        },
-        {
-          path: "options.choices", 
-        },
-      ],
-    });
+    const bill = await Bill.findById(id).populate([
+      {
+        path: "lineItem",
+        populate: [
+          { path: "product" },
+          { path: "options.option" },
+          { path: "options.choices" },
+        ],
+      },
+      { path: "voucher" }, 
+    ]);
 
     if (!bill) {
-      throw new Error("Không tìm thấy danh mục");
+      throw new Error("Không tìm thấy hóa đơn");
     }
+
     return bill;
   } catch (error) {
     throw new Error(error.message);
   }
 };
+
 const getMonthlyRevenue = async (year) => {
   try {
     const startDate = new Date(`${year}-01-01`);
@@ -305,20 +305,20 @@ const getMonthlyRevenue = async (year) => {
       },
       {
         $group: {
-          _id: { $month: "$createdAt" }, 
-          totalRevenue: { $sum: "$total_price" }, 
+          _id: { $month: "$createdAt" },
+          totalRevenue: { $sum: "$total_price" },
         },
       },
       {
-        $sort: { _id: 1 }, 
+        $sort: { _id: 1 },
       },
     ]);
 
     const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
       const monthRevenue = monthlyRevenue.find((item) => item._id === i + 1);
       return {
-        month: i + 1, 
-        totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0, 
+        month: i + 1,
+        totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0,
       };
     });
 
@@ -328,7 +328,6 @@ const getMonthlyRevenue = async (year) => {
   }
 };
 
-
 export const billService = {
   createNew,
   getList,
@@ -336,5 +335,5 @@ export const billService = {
   getById,
   getListByDate,
   getMonthlyRevenue,
-  createBillSocket
+  createBillSocket,
 };

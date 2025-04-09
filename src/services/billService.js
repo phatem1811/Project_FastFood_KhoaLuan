@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
-
+import OrderNotification from "../models/OrderNotification"; 
 import Lineitem from "../models/lineitem";
 import Bill from "../models/bill";
 import Account from "../models/account";
 import Product from "../models/product";
+import { socketServer } from "../socketserver";
 const createNew = async (billData) => {
   const session = await mongoose.startSession();
   let newBill;
@@ -165,6 +166,20 @@ export const createBillSocket = async (billData) => {
       });
 
       await newBill.save({ session });
+
+      const notify = new OrderNotification({
+        billId: newBill._id,
+        message: `${billData.fullName} vừa đặt một đơn hàng mới.`,
+      });
+      await notify.save({ session });
+
+      const io = socketServer.getIO(); 
+
+      io.emit("new_order_notification", {
+        message: notify.message,
+        billId: newBill._id,
+        createdAt: notify.createdAt,
+      });
 
       if (billData.account) {
         const account = await Account.findById(billData.account).session(

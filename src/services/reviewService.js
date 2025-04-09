@@ -13,6 +13,17 @@ const createNew = async (reqBody) => {
   }
 };
 
+export const createReviewSocket = async (reviewData) => {
+  try {
+    const review = new Review(reviewData);
+    const savedReview = await review.save();
+    return savedReview;
+  } catch (error) {
+    console.error("Error in createReviewSocket:", error.message);
+    throw new Error(error.message);
+  }
+};
+
 
 const getList = async () => {
   try {
@@ -76,4 +87,5 @@ export const reviewService = {
   getById,
   updateNew,
   deleteReview,
+  createReviewSocket
 };

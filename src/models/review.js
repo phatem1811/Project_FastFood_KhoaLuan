@@ -28,6 +28,10 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    isRead: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

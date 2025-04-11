@@ -22,7 +22,7 @@ const payos = new PayOS(
 
 app.use(cors({
   origin: '*', 
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"], 
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 

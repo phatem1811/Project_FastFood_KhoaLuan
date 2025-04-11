@@ -27,12 +27,15 @@ export const createReviewSocket = async (reviewData) => {
 
 const getList = async () => {
   try {
-    const reviews = await Review.find({}).populate("product");
+    const reviews = await Review.find({})
+      .populate("product")
+      .sort({ createdAt: -1 });
     return reviews;
   } catch (error) {
     throw error;
   }
 };
+
 
 const getByProduct = async (productId) => {
   try {
@@ -67,6 +70,26 @@ const updateNew = async (id, reqBody) => {
   }
 };
 
+const fixIsRead = async () => {
+  try {
+    const result = await Review.updateMany(
+      { isRead: { $exists: false } },
+      { $set: { isRead: false } }
+    );
+    return result;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+const markAllAsRead = async () => {
+  try {
+    const result = await Review.updateMany({ isRead: false }, { isRead: true });
+    return result;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 
 const deleteReview = async (id) => {
   try {
@@ -87,5 +110,8 @@ export const reviewService = {
   getById,
   updateNew,
   deleteReview,
-  createReviewSocket
+  createReviewSocket,
+  markAllAsRead,
+  fixIsRead
+  
 };

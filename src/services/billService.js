@@ -173,14 +173,6 @@ export const createBillSocket = async (billData) => {
       });
       await notify.save({ session });
 
-      const io = socketServer.getIO(); 
-
-      io.emit("new_order_notification", {
-        message: notify.message,
-        billId: newBill._id,
-        createdAt: notify.createdAt,
-      });
-
       if (billData.account) {
         const account = await Account.findById(billData.account).session(
           session
@@ -219,6 +211,21 @@ const updateBill = async (id, state) => {
       new: true,
     });
 
+    if (!updatedBill) {
+      throw new Error("Bill không tồn tại");
+    }
+
+    return updatedBill;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+export const updateBillSocket = async (id, state) => {
+  try {
+    const updateData = state === 4 ? { state, isPaid: true } : { state };
+    const updatedBill = await Bill.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
     if (!updatedBill) {
       throw new Error("Bill không tồn tại");
     }

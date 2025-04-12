@@ -9,6 +9,7 @@ import { ingredientRoute } from './ingredientRouter';
 import { optionalRoute } from './optionalRouter';
 import { choiceRoute } from './choiceRouter';
 import { reviewRoute } from './reviewRouter';
+import { orderNotifyRoute } from './orderNotifycationRouter';
 const Router = express.Router();
 
 Router.get('/status', (req, res) => {
@@ -25,5 +26,6 @@ Router.use('/ingredient', ingredientRoute);
 Router.use('/optional', optionalRoute);
 Router.use('/choice', choiceRoute);
 Router.use('/review', reviewRoute);
+Router.use('/order-notify', orderNotifyRoute);
 
 export const APIs = Router;

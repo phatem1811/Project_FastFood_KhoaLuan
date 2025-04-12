@@ -1,5 +1,5 @@
 let io;
-import { createBillSocket } from "./services/billService.js";
+import { createBillSocket, updateBillSocket } from "./services/billService.js";
 import { createReviewSocket } from "./services/reviewService.js"
 import ReviewNotification from "./models/ReviewNotification.js"; 
 const init = (server) => {
@@ -15,10 +15,41 @@ const init = (server) => {
   io.on("connection", (socket) => {
     console.log(" User connected");
 
+
+    socket.on("updateOrderStatus", async (data) => {
+      try {
+
+        console.log("check state socket",data)
+        const updatedBill = await updateBillSocket(data.billId, data.state);
+        
+        // Emit the updated bill status to all connected clients
+        io.emit("order_status_updated", {
+          status: "success",
+          billId: updatedBill._id,
+          newState: updatedBill.state,
+          isPaid: updatedBill.isPaid,
+          message: `Trạng thái đơn hàng ${updatedBill._id} đã được cập nhật thành ${updatedBill.state}`,
+        });
+      } catch (error) {
+        console.error("Error updating bill:", error);
+    
+        io.emit("order_status_updated", {
+          status: "error",
+          message: "Cập nhật trạng thái đơn hàng thất bại.",
+        });
+      }
+    });
+
+
     socket.on("createBill", async (billData) => {
       try {
  
         const bill = await createBillSocket(billData);
+
+        io.emit("order_notification", {
+          message: "Bạn có đơn hàng mới!",
+        });
+
 
         io.emit("billCreated", {
           status: "success",

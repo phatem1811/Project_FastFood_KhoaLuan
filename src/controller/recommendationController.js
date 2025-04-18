@@ -42,10 +42,10 @@ const getRecommendations = async (req, res, next) => {
       isStock: true,
     })
       .populate("category", "name")
-      .limit(5)
+      .limit(8)
       .lean();
 
-    if (recommendedProducts.length < 5) {
+    if (recommendedProducts.length < 8) {
       const topProducts = await LineItem.aggregate([
         {
           $group: {
@@ -54,7 +54,7 @@ const getRecommendations = async (req, res, next) => {
           },
         },
         { $sort: { totalQuantity: -1 } },
-        { $limit: 5 - recommendedProducts.length },
+        { $limit: 8 - recommendedProducts.length },
         {
           $lookup: {
             from: "products",
@@ -87,6 +87,7 @@ const getRecommendations = async (req, res, next) => {
             price: "$product.price",
             currentPrice: "$product.currentPrice",
             category: "$product.category.name",
+            description: "$product.description",
           },
         },
       ]);

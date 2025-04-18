@@ -38,10 +38,10 @@ const getRelatedProducts = async (req, res, next) => {
       isStock: true,
     })
       .populate("category", "name")
-      .limit(5)
+      .limit(3)
       .lean();
 
-    if (relatedProducts.length < 5) {
+    if (relatedProducts.length < 3) {
       const topProducts = await Product.aggregate([
         {
           $match: {
@@ -50,7 +50,7 @@ const getRelatedProducts = async (req, res, next) => {
             _id: { $ne: new mongoose.Types.ObjectId(id) }
           },
         },
-        { $sample: { size: 5 - relatedProducts.length } },
+        { $sample: { size: 3 - relatedProducts.length } },
         {
           $lookup: {
             from: "categories",

@@ -85,6 +85,5 @@ const getRelatedProducts = async (req, res, next) => {
   }
 };
 export const relatedProductsController = {
-  // ...các hàm khác
   getRelatedProducts,
 };

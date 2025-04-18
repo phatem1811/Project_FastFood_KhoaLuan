@@ -1,9 +1,9 @@
 import express from "express";
 
 const Router = express.Router();
-const recommendationController = require('../../controller/recommendationController');
 import { relatedProductsController } from "../../controller/relatedProductsController";
 import { authenticate } from "../../middleware/authenticate";
+import { recommendationController } from '../../controller/recommendationController';
 
 
 Router.get('/recommendations', authenticate, recommendationController.getRecommendations);

@@ -1,64 +1,65 @@
-const Product = require('../models/Product');
+import mongoose from "mongoose";
+import Product from "../models/product.js";
 
-exports.getRelatedProducts = async (req, res) => {
+const getRelatedProducts = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    console.log("call api thành công");
+    const id = req.params.id;
+    console.log("check id", id);
 
-    // Kiểm tra productId hợp lệ
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'ID sản phẩm không hợp lệ' });
+      const error = new Error("ID sản phẩm không hợp lệ");
+      error.statusCode = 400;
+      throw error;
     }
 
-    console.log('checkProductId', id);
-
-    // Tìm sản phẩm hiện tại
     const currentProduct = await Product.findById(id)
-      .populate('category', 'name')
+      .populate("category", "name")
       .lean();
 
-    console.log('checkCurrentProduct', currentProduct);
 
+      console.log("check currentProduct", currentProduct);
     if (!currentProduct) {
-      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+      const error = new Error("Sản phẩm không tồn tại");
+      error.statusCode = 404;
+      throw error;
     }
 
-    // Kiểm tra category có tồn tại
     if (!currentProduct.category || !currentProduct.category._id) {
-      return res.status(400).json({ message: 'Sản phẩm không có danh mục hợp lệ' });
+      const error = new Error("Sản phẩm không có danh mục hợp lệ");
+      error.statusCode = 400;
+      throw error;
     }
 
-    // Tìm sản phẩm tương tự (cùng danh mục, loại trừ sản phẩm hiện tại)
-    const relatedProducts = await Product.find({
+    let relatedProducts = await Product.find({
       category: currentProduct.category._id,
-      _id: { $ne: productId },
+      _id: { $ne: id },
       isSelling: true,
       isStock: true,
     })
-      .populate('category', 'name')
+      .populate("category", "name")
       .limit(5)
       .lean();
 
-    // Nếu không đủ 5 sản phẩm, lấy sản phẩm ngẫu nhiên
     if (relatedProducts.length < 5) {
       const topProducts = await Product.aggregate([
         {
           $match: {
             isSelling: true,
             isStock: true,
-            _id: { $ne: mongoose.Types.ObjectId(productId) },
+            _id: { $ne: new mongoose.Types.ObjectId(id) }
           },
         },
         { $sample: { size: 5 - relatedProducts.length } },
         {
           $lookup: {
-            from: 'categories', // Đảm bảo tên collection đúng
-            localField: 'category',
-            foreignField: '_id',
-            as: 'category',
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category",
           },
         },
-        // Dùng $unwind với preserveNullAndEmptyArrays để giữ document nếu category rỗng
-        { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
         {
           $project: {
             _id: 1,
@@ -66,7 +67,7 @@ exports.getRelatedProducts = async (req, res) => {
             picture: 1,
             price: 1,
             currentPrice: 1,
-            category: { $ifNull: ['$category.name', 'Không có danh mục'] },
+            category: { $ifNull: ["$category.name", "Không có danh mục"] },
           },
         },
       ]);
@@ -74,9 +75,16 @@ exports.getRelatedProducts = async (req, res) => {
       relatedProducts.push(...topProducts);
     }
 
-    res.json(relatedProducts);
+    res.status(200).json({
+      message: "Lấy sản phẩm liên quan thành công",
+      relatedProducts,
+    });
+
   } catch (error) {
-    console.error('Error in getRelatedProducts:', error);
-    res.status(500).json({ message: 'Lỗi server', error: error.message });
+    next(error);
   }
+};
+export const relatedProductsController = {
+  // ...các hàm khác
+  getRelatedProducts,
 };

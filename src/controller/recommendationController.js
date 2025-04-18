@@ -1,6 +1,6 @@
-const Bill = require('../models/Bill');
-const LineItem = require('../models/LineItem');
-const Product = require('../models/Product');
+import Bill from "../models/bill";
+import Lineitem from "../models/lineitem";
+import Product from "../models/product.js";
 const _ = require('lodash');
 
 exports.getRecommendations = async (req, res) => {

@@ -1,7 +1,7 @@
-const { boolean } = require("joi");
-const mongoose = require("mongoose");
+const { boolean } = require('joi');
+const mongoose = require('mongoose');
 
-const lineitemSchema = new mongoose.Schema(
+const lineItemSchema = new mongoose.Schema(
   {
     quantity: {
       type: Number,
@@ -38,6 +38,4 @@ const lineitemSchema = new mongoose.Schema(
   }
 );
 
-const Lineitem = mongoose.model("LineItem", lineitemSchema);
-
-module.exports = Lineitem;
+module.exports = mongoose.models.LineItem || mongoose.model('LineItem', lineItemSchema);

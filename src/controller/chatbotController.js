@@ -3,18 +3,29 @@ import ChatMessage from '../models/chatMessage.js';
 import mongoose from 'mongoose';
 import { SessionsClient } from 'dialogflow';
 import dotenv from 'dotenv';
+import bill from '../models/bill.js';
 
 dotenv.config();
 
 const nlpManager = new NlpManager({ languages: ['vi'], forceNER: true });
 
+// Intent: Greeting
 nlpManager.addDocument('vi', 'Xin chào', 'greeting');
 nlpManager.addDocument('vi', 'Chào bạn', 'greeting');
-nlpManager.addDocument('vi', 'Đơn hàng của tôi đâu', 'order_status');
+nlpManager.addAnswer('vi', 'greeting', 'Chào bạn! Tôi là FastFoodBot, rất vui được giúp bạn hôm nay. Bạn cần gì nào?');
+
+// Intent: Menu
+nlpManager.addDocument('vi', 'Thực đơn có gì?', 'menu');
+nlpManager.addDocument('vi', 'Menu hôm nay có gì?', 'menu');
+nlpManager.addAnswer('vi', 'menu', 'Thực đơn hôm nay có gà rán, bánh mì, khoai tây chiên, và các loại nước uống như Pepsi, trà chanh. Bạn muốn gọi món nào?');
+
+// Intent: Order Status
 nlpManager.addDocument('vi', 'Kiểm tra đơn hàng', 'order_status');
-nlpManager.addDocument('vi', 'Có khuyến mãi gì không', 'promotion');
-nlpManager.addAnswer('vi', 'greeting', 'Chào bạn! Tôi là chatbot hỗ trợ. Bạn cần giúp gì?');
+nlpManager.addDocument('vi', 'Đơn hàng của tôi đâu', 'order_status');
 nlpManager.addAnswer('vi', 'order_status', 'Vui lòng cung cấp mã đơn hàng để tôi kiểm tra.');
+
+// Intent: Promotion
+nlpManager.addDocument('vi', 'Có khuyến mãi gì không', 'promotion');
 nlpManager.addAnswer('vi', 'promotion', 'Hiện tại có khuyến mãi 20% cho combo gà rán. Bạn muốn đặt ngay?');
 
 const trainNLP = async () => {
@@ -27,7 +38,6 @@ const trainNLP = async () => {
 trainNLP().catch((err) => console.error('NLP training error:', err));
 console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
-// Khởi tạo Dialogflow client
 const dialogflowClient = new SessionsClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
@@ -35,7 +45,6 @@ const dialogflowClient = new SessionsClient({
 const callDialogflow = async (message, sessionId) => {
   try {
     console.log('Calling Dialogflow for message:', message, 'with sessionId:', sessionId);
-    // Sử dụng project ID mới
     const sessionPath = dialogflowClient.sessionPath('newagent-hvwx', sessionId);
     const request = {
       session: sessionPath,
@@ -78,9 +87,25 @@ const sendMessage = async (req, res, next) => {
 
     let botReply;
     const nlpResponse = await nlpManager.process('vi', message);
-    // console.log('NLP response:', nlpResponse);
 
-    if (nlpResponse.intent !== 'None' && nlpResponse.score > 0.7) {
+    const orderIdMatch = message.match(/mã đơn hàng ([a-fA-F0-9]+)/i) || message.match(/đơn hàng ([a-fA-F0-9]+)/i);
+    if (orderIdMatch && orderIdMatch[1]) {
+      const orderId = orderIdMatch[1];
+      const order = await bill.findOne({ _id: orderId, account: accountId });
+      if (order) {
+        const statusMap = {
+          1: 'Đang xử lý',
+          2: 'Đang chuẩn bị',
+          3: 'Đang giao hàng',
+          4: 'Đã giao',
+          5: 'Đã hủy',
+        };
+        const status = statusMap[order.state] || 'Không xác định';
+        botReply = `Đơn hàng ${order._id} của bạn hiện đang ở trạng thái: ${status}. Địa chỉ giao hàng: ${order.address_shipment}. Tổng tiền: ${order.total_price} VNĐ.`;
+      } else {
+        botReply = `Không tìm thấy đơn hàng với mã ${orderId}. Bạn có chắc mã đơn hàng đúng không?`;
+      }
+    } else if (nlpResponse.intent !== 'None' && nlpResponse.score > 0.7) {
       botReply = nlpResponse.answer || 'Xin lỗi, tôi chưa hiểu. Bạn có thể nói rõ hơn không?';
       console.log('Using node-nlp reply:', botReply);
     } else {

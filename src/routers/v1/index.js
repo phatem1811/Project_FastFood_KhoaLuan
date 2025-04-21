@@ -11,6 +11,7 @@ import { choiceRoute } from './choiceRouter';
 import { reviewRoute } from './reviewRouter';
 import { orderNotifyRoute } from './orderNotifycationRouter';
 import { recommendationRouter } from './recommendationRouter';
+import { chatMessageRouter } from './chatMessageRouter';
 
 const Router = express.Router();
 
@@ -30,5 +31,6 @@ Router.use('/choice', choiceRoute);
 Router.use('/review', reviewRoute);
 Router.use('/order-notify', orderNotifyRoute);
 Router.use('/recommendations', recommendationRouter);
+Router.use('/chatbot', chatMessageRouter);
 
 export const APIs = Router;

@@ -1,0 +1,354 @@
+{
+  "settings": {
+    "languages": [
+      "vi"
+    ],
+    "forceNER": true,
+    "tag": "nlp",
+    "threshold": 0.5,
+    "autoLoad": true,
+    "autoSave": true,
+    "modelFileName": "model.nlp",
+    "executeActionsBeforeAnswers": false,
+    "calculateSentiment": true
+  },
+  "nluManager": {
+    "settings": {
+      "tag": "nlu-manager"
+    },
+    "locales": [
+      "vi"
+    ],
+    "languageNames": {},
+    "domainManagers": {
+      "vi": {
+        "settings": {
+          "locale": "vi",
+          "trainByDomain": false,
+          "tag": "domain-manager-vi",
+          "nluByDomain": {
+            "default": {
+              "className": "NeuralNlu",
+              "settings": {}
+            }
+          },
+          "useStemDict": true
+        },
+        "stemDict": {
+          "chao,xin": {
+            "intent": "greeting",
+            "domain": "default"
+          },
+          "ban,chao": {
+            "intent": "greeting",
+            "domain": "default"
+          },
+          "cua,hang,toi,đau,đon": {
+            "intent": "order_status",
+            "domain": "default"
+          },
+          "hang,kiem,tra,đon": {
+            "intent": "order_status",
+            "domain": "default"
+          },
+          "co,gi,khong,khuyen,mai": {
+            "intent": "promotion",
+            "domain": "default"
+          }
+        },
+        "intentDict": {
+          "greeting": "default",
+          "order_status": "default",
+          "promotion": "default"
+        },
+        "sentences": [
+          {
+            "domain": "default",
+            "utterance": "Xin chào",
+            "intent": "greeting"
+          },
+          {
+            "domain": "default",
+            "utterance": "Chào bạn",
+            "intent": "greeting"
+          },
+          {
+            "domain": "default",
+            "utterance": "Đơn hàng của tôi đâu",
+            "intent": "order_status"
+          },
+          {
+            "domain": "default",
+            "utterance": "Kiểm tra đơn hàng",
+            "intent": "order_status"
+          },
+          {
+            "domain": "default",
+            "utterance": "Có khuyến mãi gì không",
+            "intent": "promotion"
+          }
+        ],
+        "domains": {
+          "master_domain": {
+            "settings": {
+              "locale": "vi",
+              "tag": "nlu-vi",
+              "keepStopwords": true,
+              "nonefeatureValue": 1,
+              "nonedeltaMultiplier": 1.2,
+              "spellCheck": false,
+              "spellCheckDistance": 1,
+              "filterZeros": true,
+              "log": true
+            },
+            "features": {
+              "xin": 1,
+              "chao": 1,
+              "ban": 1,
+              "đon": 1,
+              "hang": 1,
+              "cua": 1,
+              "toi": 1,
+              "đau": 1,
+              "kiem": 1,
+              "tra": 1,
+              "co": 1,
+              "khuyen": 1,
+              "mai": 1,
+              "gi": 1,
+              "khong": 1
+            },
+            "intents": {
+              "greeting": 1,
+              "order_status": 1,
+              "promotion": 1
+            },
+            "intentFeatures": {
+              "greeting": {
+                "xin": 1,
+                "chao": 1,
+                "ban": 1
+              },
+              "order_status": {
+                "đon": 1,
+                "hang": 1,
+                "cua": 1,
+                "toi": 1,
+                "đau": 1,
+                "kiem": 1,
+                "tra": 1
+              },
+              "promotion": {
+                "co": 1,
+                "khuyen": 1,
+                "mai": 1,
+                "gi": 1,
+                "khong": 1
+              }
+            },
+            "featuresToIntent": {
+              "xin": [
+                "greeting"
+              ],
+              "chao": [
+                "greeting"
+              ],
+              "ban": [
+                "greeting"
+              ],
+              "đon": [
+                "order_status"
+              ],
+              "hang": [
+                "order_status"
+              ],
+              "cua": [
+                "order_status"
+              ],
+              "toi": [
+                "order_status"
+              ],
+              "đau": [
+                "order_status"
+              ],
+              "kiem": [
+                "order_status"
+              ],
+              "tra": [
+                "order_status"
+              ],
+              "co": [
+                "promotion"
+              ],
+              "khuyen": [
+                "promotion"
+              ],
+              "mai": [
+                "promotion"
+              ],
+              "gi": [
+                "promotion"
+              ],
+              "khong": [
+                "promotion"
+              ]
+            },
+            "neuralNetwork": {
+              "settings": {
+                "locale": "vi",
+                "tag": "nlu-vi",
+                "keepStopwords": true,
+                "nonefeatureValue": 1,
+                "nonedeltaMultiplier": 1.2,
+                "spellCheck": false,
+                "spellCheckDistance": 1,
+                "filterZeros": true,
+                "log": true
+              },
+              "features": [
+                "xin",
+                "chao",
+                "ban",
+                "đon",
+                "hang",
+                "cua",
+                "toi",
+                "đau",
+                "kiem",
+                "tra",
+                "co",
+                "khuyen",
+                "mai",
+                "gi",
+                "khong"
+              ],
+              "intents": [
+                "greeting",
+                "order_status",
+                "promotion"
+              ],
+              "perceptrons": [
+                [
+                  3.637629747390747,
+                  7.530057430267334,
+                  3.852546453475952,
+                  -0.9665390849113464,
+                  -0.9665390849113464,
+                  -0.39640843868255615,
+                  -0.39640843868255615,
+                  -0.39640843868255615,
+                  -0.5257040858268738,
+                  -0.5257040858268738,
+                  -0.6005203723907471,
+                  -0.6005203723907471,
+                  -0.6005203723907471,
+                  -0.6005203723907471,
+                  -0.6005203723907471,
+                  2.9718678562448892
+                ],
+                [
+                  -0.46469148993492126,
+                  -0.9272321462631226,
+                  -0.4413177967071533,
+                  4.026472568511963,
+                  4.026472568511963,
+                  1.626323938369751,
+                  1.626323938369751,
+                  1.626323938369751,
+                  2.4053330421447754,
+                  2.4053330421447754,
+                  -0.3149385452270508,
+                  -0.3149385452270508,
+                  -0.3149385452270508,
+                  -0.3149385452270508,
+                  -0.3149385452270508,
+                  1.3662600071910083
+                ],
+                [
+                  -0.31456515192985535,
+                  -0.6176841259002686,
+                  -0.28511080145835876,
+                  -0.3453235924243927,
+                  -0.3453235924243927,
+                  -0.1591634601354599,
+                  -0.1591634601354599,
+                  -0.1591634601354599,
+                  -0.1653384417295456,
+                  -0.1653384417295456,
+                  2.7023274898529053,
+                  2.7023274898529053,
+                  2.7023274898529053,
+                  2.7023274898529053,
+                  2.7023274898529053,
+                  0.846885696830803
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "intentDomains": {},
+    "extraSentences": [
+      [
+        "vi",
+        "Xin chào"
+      ],
+      [
+        "vi",
+        "Chào bạn"
+      ],
+      [
+        "vi",
+        "Đơn hàng của tôi đâu"
+      ],
+      [
+        "vi",
+        "Kiểm tra đơn hàng"
+      ],
+      [
+        "vi",
+        "Có khuyến mãi gì không"
+      ]
+    ]
+  },
+  "ner": {
+    "settings": {
+      "tag": "ner",
+      "entityPreffix": "%",
+      "entitySuffix": "%"
+    },
+    "rules": {}
+  },
+  "nlgManager": {
+    "settings": {
+      "tag": "nlg-manager"
+    },
+    "responses": {
+      "vi": {
+        "greeting": [
+          {
+            "answer": "Chào bạn! Tôi là chatbot hỗ trợ. Bạn cần giúp gì?"
+          }
+        ],
+        "order_status": [
+          {
+            "answer": "Vui lòng cung cấp mã đơn hàng để tôi kiểm tra."
+          }
+        ],
+        "promotion": [
+          {
+            "answer": "Hiện tại có khuyến mãi 20% cho combo gà rán. Bạn muốn đặt ngay?"
+          }
+        ]
+      }
+    }
+  },
+  "actionManager": {
+    "settings": {
+      "tag": "action-manager"
+    },
+    "actions": {}
+  },
+  "slotManager": {}
+}

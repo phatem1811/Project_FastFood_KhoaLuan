@@ -240,15 +240,19 @@ const getListByDate = async (start, end) => {
     let startDate, endDate;
 
     if (start && end) {
-      // Trường hợp truyền đầy đủ start và end
+      // ✅ Truyền cả start và end
       startDate = new Date(start);
       endDate = new Date(end);
     } else if (start && !end) {
-      // Trường hợp chỉ có start
+      // ✅ Chỉ truyền start
       startDate = new Date(start);
       endDate = new Date(); // lấy ngày hiện tại
+    } else if (!start && end) {
+      // ✅ Chỉ truyền end
+      startDate = new Date(0); 
+      endDate = new Date(end);
     } else {
-      // Trường hợp không truyền gì: mặc định 30 ngày gần nhất
+      // ✅ Không truyền gì: mặc định 30 ngày gần nhất
       endDate = new Date();
       startDate = new Date();
       startDate.setDate(endDate.getDate() - 30);
@@ -292,8 +296,6 @@ const getListByDate = async (start, end) => {
     throw new Error(error.message);
   }
 };
-
-
 const getById = async (id) => {
   try {
     const bill = await Bill.findById(id).populate([

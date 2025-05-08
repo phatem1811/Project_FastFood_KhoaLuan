@@ -311,10 +311,13 @@ const getById = async (id) => {
   }
 };
 
-const getMonthlyRevenue = async (year) => {
-  try {
-    const startDate = new Date(`${year}-01-01`);
-    const endDate = new Date(`${year}-12-31`);
+
+
+const getMonthlyRevenue = async (year, productId = null) => {
+  const startDate = new Date(`${year}-01-01`);
+  const endDate = new Date(`${year}-12-31`);
+
+  if (!productId) {
 
     const monthlyRevenue = await Bill.aggregate([
       {
@@ -345,9 +348,60 @@ const getMonthlyRevenue = async (year) => {
     });
 
     return revenueByMonth;
-  } catch (error) {
-    throw new Error(error.message);
   }
+
+  const pipeline = [
+    {
+      $match: {
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "lineitems", 
+        localField: "lineItem",
+        foreignField: "_id",
+        as: "lineItems",
+      },
+    },
+    { $unwind: "$lineItems" },
+  ];
+
+
+  if (productId) {
+    pipeline.push({
+      $match: {
+        "lineItems.product": new mongoose.Types.ObjectId(productId),
+      },
+    });
+  }
+
+  pipeline.push(
+    {
+      $group: {
+        _id: { $month: "$createdAt" },
+        totalRevenue: {
+          $sum: "$lineItems.subtotal", 
+        },
+      },
+    },
+    { $sort: { _id: 1 } }
+  );
+
+  const monthlyRevenue = await Bill.aggregate(pipeline);
+
+  const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
+    const monthRevenue = monthlyRevenue.find((item) => item._id === i + 1);
+    return {
+      month: i + 1,
+      totalRevenue: monthRevenue ? monthRevenue.totalRevenue : 0,
+    };
+  });
+
+  return revenueByMonth;
 };
 
 export const billService = {

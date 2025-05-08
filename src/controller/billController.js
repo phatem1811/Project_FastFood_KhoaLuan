@@ -64,12 +64,12 @@ const getById = async (req, res, next) => {
 
 const getMonthlyRevenue = async (req, res, next) => {
   try {
-    const { year } = req.query; 
+    const { year ,productId} = req.query; 
     if (!year) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Year is required");
     }
 
-    const data = await billService.getMonthlyRevenue(year);
+    const data = await billService.getMonthlyRevenue(year, productId);
     return res.status(StatusCodes.OK).json({
       message: `Doanh thu cho năm ${year} lấy thành công`,
       data,

@@ -235,11 +235,24 @@ export const updateBillSocket = async (id, state) => {
     throw new Error(error.message);
   }
 };
-const getListByDate = async () => {
+const getListByDate = async (start, end) => {
   try {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 30);
+    let startDate, endDate;
+
+    if (start && end) {
+      // Trường hợp truyền đầy đủ start và end
+      startDate = new Date(start);
+      endDate = new Date(end);
+    } else if (start && !end) {
+      // Trường hợp chỉ có start
+      startDate = new Date(start);
+      endDate = new Date(); // lấy ngày hiện tại
+    } else {
+      // Trường hợp không truyền gì: mặc định 30 ngày gần nhất
+      endDate = new Date();
+      startDate = new Date();
+      startDate.setDate(endDate.getDate() - 30);
+    }
 
     const searchQuery = {
       createdAt: {
@@ -257,35 +270,29 @@ const getListByDate = async () => {
       bill.lineItem.forEach((item) => {
         const productId = item.product.toString();
         const quantity = item.quantity;
-        if (productStats[productId]) {
-          productStats[productId] += quantity;
-        } else {
-          productStats[productId] = quantity;
-        }
+        productStats[productId] = (productStats[productId] || 0) + quantity;
       });
     });
+
     const productIds = Object.keys(productStats);
     const products = await Product.find({ _id: { $in: productIds } });
 
-    const productSale = products.map((product) => {
-      return {
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        picture: product.picture,
-        quantity: productStats[product._id.toString()],
-      };
-    });
+    const productSale = products.map((product) => ({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      picture: product.picture,
+      quantity: productStats[product._id.toString()],
+    }));
 
     productSale.sort((a, b) => b.quantity - a.quantity);
 
-    return {
-      productSale,
-    };
+    return { productSale };
   } catch (error) {
     throw new Error(error.message);
   }
 };
+
 
 const getById = async (id) => {
   try {

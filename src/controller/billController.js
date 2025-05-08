@@ -18,7 +18,7 @@ const getList = async (req, res, next) => {
   }
 }
 const getListByDate = async (req, res, next) => {
-  const { startDate, endDate } = req.body; 
+  const { startDate, endDate } = req.query; 
 
   try {
     const data = await billService.getListByDate(startDate, endDate);

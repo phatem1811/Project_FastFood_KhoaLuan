@@ -12,7 +12,7 @@ services:
         value: ''
       - key: APP_HOST
         value: 'localhost'
-      - key: APP_PORT
+      - key: PORT
         value: '8080'
       - key: JWT_SECRET
         value: '27dbe000-c2bb-4e8e-a81f-bef616ffead9'

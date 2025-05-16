@@ -33,7 +33,7 @@ app.use(
 );
 
 const hostname = 'localhost';
-const port = 8080;
+const PORT = process.env.APP_PORT || 8080;
 
 connection();
 
@@ -80,6 +80,6 @@ app.post('/create-payment-link', async (req, res) => {
 // Xử lý lỗi toàn cục
 app.use(errorHandlingMiddleware);
 
-server.listen(port, '0.0.0.0', () => {
-  console.log(`I am running at http://${hostname}:${port}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`I am running at http://${hostname}:${PORT}`);
 });

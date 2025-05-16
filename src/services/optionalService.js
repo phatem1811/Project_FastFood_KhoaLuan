@@ -1,4 +1,4 @@
-import Optional from "../models/Optional";
+import Optional from "../models/optional";
 import Choice from "../models/choice";
 import Product from "../models/product";
 const createNew = async (reqBody) => {

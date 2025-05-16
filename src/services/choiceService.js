@@ -1,5 +1,5 @@
 import Choice from "../models/choice";
-import Optional from "../models/Optional";
+import Optional from "../models/optional";
 
 const createNew = async (reqBody) => {
 

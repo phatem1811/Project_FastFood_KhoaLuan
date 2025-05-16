@@ -18,7 +18,6 @@ const getRelatedProducts = async (req, res, next) => {
       .lean();
 
 
-      console.log("check currentProduct", currentProduct);
     if (!currentProduct) {
       const error = new Error("Sản phẩm không tồn tại");
       error.statusCode = 404;

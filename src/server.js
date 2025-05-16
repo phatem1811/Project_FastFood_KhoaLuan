@@ -32,7 +32,6 @@ app.use(
   })
 );
 
-const hostname = 'localhost';
 const PORT = process.env.PORT || 8080;
 
 connection();
@@ -81,5 +80,5 @@ app.post('/create-payment-link', async (req, res) => {
 app.use(errorHandlingMiddleware);
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`I am running at http://${hostname}:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

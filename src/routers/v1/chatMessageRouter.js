@@ -1,10 +1,18 @@
-import express from "express";
+import express from 'express';
 import { chatbotController } from '../../controller/chatbotController';
-import { authenticate } from "../../middleware/authenticate";
+import { authenticate } from '../../middleware/authenticate';
 
 const Router = express.Router();
 
-Router.post('/message', authenticate, chatbotController.sendMessage);
-Router.get('/history', authenticate, chatbotController.getChatHistory);
+const optionalAuthenticate = (req, res, next) => {
+  if (req.headers.authorization) {
+    return authenticate(req, res, next);
+  }
+  next();
+};
+
+Router.post('/message', optionalAuthenticate, chatbotController.sendMessage);
+Router.get('/history', optionalAuthenticate, chatbotController.getChatHistory);
+Router.post('/sync-guest-messages', authenticate, chatbotController.syncGuestMessages);
 
 export const chatMessageRouter = Router;

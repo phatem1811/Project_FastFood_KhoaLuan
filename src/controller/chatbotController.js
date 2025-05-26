@@ -3,9 +3,13 @@ import ChatMessage from '../models/chatMessage.js';
 import mongoose from 'mongoose';
 import { SessionsClient } from 'dialogflow';
 import dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid'; // Add uuid for guest session IDs
 import bill from '../models/bill.js';
 
 dotenv.config();
+
+// In-memory store for guest messages (alternatively, use a MongoDB collection with TTL)
+const guestMessages = new Map();
 
 const nlpManager = new NlpManager({ languages: ['vi'], forceNER: true });
 
@@ -36,7 +40,6 @@ const trainNLP = async () => {
 };
 
 trainNLP().catch((err) => console.error('NLP training error:', err));
-console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
 const dialogflowClient = new SessionsClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
@@ -44,7 +47,6 @@ const dialogflowClient = new SessionsClient({
 
 const callDialogflow = async (message, sessionId) => {
   try {
-    console.log('Calling Dialogflow for message:', message, 'with sessionId:', sessionId);
     const sessionPath = dialogflowClient.sessionPath('newagent-hvwx', sessionId);
     const request = {
       session: sessionPath,
@@ -55,13 +57,8 @@ const callDialogflow = async (message, sessionId) => {
         },
       },
     };
-    console.log('Sending request to Dialogflow:', JSON.stringify(request, null, 2));
     const [response] = await dialogflowClient.detectIntent(request);
-    const result = response.queryResult;
-    console.log('Dialogflow response:', JSON.stringify(result, null, 2));
-    const fulfillmentText = result.fulfillmentText || 'Xin lỗi, tôi chưa hiểu. Bạn có thể nói rõ hơn không?';
-    console.log('Dialogflow fulfillmentText:', fulfillmentText);
-    return fulfillmentText;
+    return response.queryResult.fulfillmentText || 'Xin lỗi, tôi chưa hiểu. Bạn có thể nói rõ hơn không?';
   } catch (error) {
     console.error('Dialogflow error:', error.message);
     return 'Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi của bạn. Bạn có thể thử lại không?';
@@ -70,69 +67,105 @@ const callDialogflow = async (message, sessionId) => {
 
 const sendMessage = async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { message, sessionId } = req.body;
     const accountId = req.user?.id || req.user?._id;
+    const isGuest = !accountId;
+    const effectiveSessionId = isGuest ? sessionId || uuidv4() : accountId;
 
-    if (!mongoose.Types.ObjectId.isValid(accountId)) {
+    if (isGuest && !sessionId) {
+      res.setHeader('X-Session-Id', effectiveSessionId);
+    }
+
+    let userMessage;
+    if (!isGuest && !mongoose.Types.ObjectId.isValid(accountId)) {
       const error = new Error('ID tài khoản không hợp lệ');
       error.statusCode = 400;
       throw error;
     }
 
-    const userMessage = await ChatMessage.create({
-      account: accountId,
-      message,
-      sender: 'user',
-    });
+    if (!isGuest) {
+      userMessage = await ChatMessage.create({
+        account: accountId,
+        message,
+        sender: 'user',
+      });
+    } else {
+      userMessage = {
+        _id: `temp-${Date.now()}`,
+        account: effectiveSessionId,
+        message,
+        sender: 'user',
+        timestamp: new Date(),
+      };
+      // Store guest message in memory
+      if (!guestMessages.has(effectiveSessionId)) {
+        guestMessages.set(effectiveSessionId, []);
+      }
+      guestMessages.get(effectiveSessionId).push(userMessage);
+    }
 
     let botReply;
     const nlpResponse = await nlpManager.process('vi', message);
 
     const orderIdMatch = message.match(/mã đơn hàng ([a-fA-F0-9]+)/i) || message.match(/đơn hàng ([a-fA-F0-9]+)/i);
     if (orderIdMatch && orderIdMatch[1]) {
-      const orderId = orderIdMatch[1];
-      const order = await bill.findOne({ _id: orderId, account: accountId });
-      if (order) {
-        const statusMap = {
-          1: 'Đang xử lý',
-          2: 'Đang chuẩn bị',
-          3: 'Đang giao hàng',
-          4: 'Đã giao',
-          5: 'Đã hủy',
-        };
-        const status = statusMap[order.state] || 'Không xác định';
-        botReply = `Đơn hàng ${order._id} của bạn hiện đang ở trạng thái: ${status}. Địa chỉ giao hàng: ${order.address_shipment}. Tổng tiền: ${order.total_price} VNĐ.`;
+      if (isGuest) {
+        botReply = 'Vui lòng đăng nhập để kiểm tra trạng thái đơn hàng.';
       } else {
-        botReply = `Không tìm thấy đơn hàng với mã ${orderId}. Bạn có chắc mã đơn hàng đúng không?`;
+        const orderId = orderIdMatch[1];
+        const order = await bill.findOne({ _id: orderId, account: accountId });
+        if (order) {
+          const statusMap = {
+            1: 'Đang xử lý',
+            2: 'Đang chuẩn bị',
+            3: 'Đang giao hàng',
+            4: 'Đã giao',
+            5: 'Đã hủy',
+          };
+          const status = statusMap[order.state] || 'Không xác định';
+          botReply = `Đơn hàng ${order._id} của bạn hiện đang ở trạng thái: ${status}. Địa chỉ giao hàng: ${order.address_shipment}. Tổng tiền: ${order.total_price} VNĐ.`;
+        } else {
+          botReply = `Không tìm thấy đơn hàng với mã ${orderId}. Bạn có chắc mã đơn hàng đúng không?`;
+        }
       }
     } else if (nlpResponse.intent !== 'None' && nlpResponse.score > 0.7) {
       botReply = nlpResponse.answer || 'Xin lỗi, tôi chưa hiểu. Bạn có thể nói rõ hơn không?';
-      console.log('Using node-nlp reply:', botReply);
     } else {
-      console.log('Falling back to Dialogflow');
-      botReply = await callDialogflow(message, accountId);
+      botReply = await callDialogflow(message, effectiveSessionId);
     }
 
-    const botMessage = await ChatMessage.create({
-      account: accountId,
-      message: botReply,
-      sender: 'bot',
-    });
+    let botMessage;
+    if (!isGuest) {
+      botMessage = await ChatMessage.create({
+        account: accountId,
+        message: botReply,
+        sender: 'bot',
+      });
+    } else {
+      botMessage = {
+        _id: `temp-${Date.now() + 1}`,
+        account: effectiveSessionId,
+        message: botReply,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+      guestMessages.get(effectiveSessionId).push(botMessage);
+    }
 
     const io = req.app.get('socketio');
     if (!io) {
       console.error('Socket.io not initialized');
       throw new Error('Socket.io not initialized');
     }
-    io.to(accountId).emit('chat_message', {
+    io.to(effectiveSessionId).emit('chat_message', {
       userMessage,
       botMessage,
     });
-    console.log('Emitted chat_message to:', accountId);
 
     res.status(200).json({
       message: 'Gửi tin nhắn thành công',
       data: { userMessage, botMessage },
+      sessionId: isGuest ? effectiveSessionId : undefined,
     });
   } catch (error) {
     console.error('Send message error:', error);
@@ -143,16 +176,23 @@ const sendMessage = async (req, res, next) => {
 const getChatHistory = async (req, res, next) => {
   try {
     const accountId = req.user?.id || req.user?._id;
+    const sessionId = req.query.sessionId;
+    const isGuest = !accountId;
 
-    if (!mongoose.Types.ObjectId.isValid(accountId)) {
+    if (!isGuest && !mongoose.Types.ObjectId.isValid(accountId)) {
       const error = new Error('ID tài khoản không hợp lệ');
       error.statusCode = 400;
       throw error;
     }
 
-    const messages = await ChatMessage.find({ account: accountId })
-      .sort({ timestamp: 1 })
-      .lean();
+    let messages = [];
+    if (!isGuest) {
+      messages = await ChatMessage.find({ account: accountId })
+        .sort({ timestamp: 1 })
+        .lean();
+    } else if (sessionId && guestMessages.has(sessionId)) {
+      messages = guestMessages.get(sessionId);
+    }
 
     res.status(200).json({
       message: 'Lấy lịch sử chat thành công',
@@ -164,7 +204,38 @@ const getChatHistory = async (req, res, next) => {
   }
 };
 
+const syncGuestMessages = async (req, res, next) => {
+  try {
+    const { sessionId } = req.body;
+    const accountId = req.user?.id || req.user?._id;
+
+    if (!mongoose.Types.ObjectId.isValid(accountId)) {
+      const error = new Error('ID tài khoản không hợp lệ');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (sessionId && guestMessages.has(sessionId)) {
+      const messages = guestMessages.get(sessionId);
+      const chatMessages = messages.map((msg) => ({
+        account: accountId,
+        message: msg.message,
+        sender: msg.sender,
+        timestamp: msg.timestamp,
+      }));
+      await ChatMessage.insertMany(chatMessages);
+      guestMessages.delete(sessionId);
+    }
+
+    res.status(200).json({ message: 'Đồng bộ lịch sử chat thành công' });
+  } catch (error) {
+    console.error('Sync guest messages error:', error);
+    next(error);
+  }
+};
+
 export const chatbotController = {
   sendMessage,
   getChatHistory,
+  syncGuestMessages,
 };

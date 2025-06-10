@@ -233,6 +233,39 @@ const verify_2fa = async (req, res, next) => {
   }
 };
 
+const reset_2fa = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const account = await accountService.getById(id);
+
+    if (!account) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Không tìm thấy người dùng" });
+    }
+
+    if (account.role === 3) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "User không cần đăng nhập 2FA" });
+    }
+
+    const twoFASecretKey = await FA_SecretKey.findOne({ account: id });
+
+    const newkey_2fa_Secret = authenticator.generateSecret();
+    await FA_SecretKey.findByIdAndUpdate(twoFASecretKey._id, {
+      key: newkey_2fa_Secret,
+    });
+    await Account.findByIdAndUpdate(id, { showQrCode: true });
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: "Reset 2FA thành công." });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const changePassword = async (req, res, next) => {
   const { id, currentPassword, newPassword, confirmPassword } = req.body;
 
@@ -270,4 +303,5 @@ export const accountController = {
   verifyOTPAndChangePassword,
   get_2FA_QRcode,
   verify_2fa,
+  reset_2fa
 };

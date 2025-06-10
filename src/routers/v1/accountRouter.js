@@ -32,6 +32,7 @@ Router.route("/verify-otp").post(accountController.verifyOTP);
 
 Router.route("/:id/get_2FA_QRcode").get(accountController.get_2FA_QRcode);
 Router.route("/:id/verify_2fa").post(accountController.verify_2fa);
+Router.route("/:id/reset_2fa").get(accountController.reset_2fa);
 // Router.post("/",  accountController.createAccount );
 
 export const accountRoute = Router;

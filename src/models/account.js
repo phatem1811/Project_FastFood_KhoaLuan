@@ -44,6 +44,10 @@ const accountSchema = new mongoose.Schema(
       required: true,
       default: 3,
     },
+    showQrCode: {
+      type: Boolean,
+      default: true,
+    },
     bills: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -240,19 +240,19 @@ const getListByDate = async (start, end) => {
     let startDate, endDate;
 
     if (start && end) {
-      // ✅ Truyền cả start và end
+
       startDate = new Date(start);
       endDate = new Date(end);
     } else if (start && !end) {
-      // ✅ Chỉ truyền start
+
       startDate = new Date(start);
       endDate = new Date(); // lấy ngày hiện tại
     } else if (!start && end) {
-      // ✅ Chỉ truyền end
+
       startDate = new Date(0); 
       endDate = new Date(end);
     } else {
-      // ✅ Không truyền gì: mặc định 30 ngày gần nhất
+
       endDate = new Date();
       startDate = new Date();
       startDate.setDate(endDate.getDate() - 30);

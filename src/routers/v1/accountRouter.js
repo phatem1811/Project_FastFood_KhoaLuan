@@ -29,6 +29,9 @@ Router.route("/send-otp").post(accountValidation.createAccount, accountControlle
 Router.route("/reset-password").post(accountValidation.resetPassword, accountController.resetPassword);
 Router.route("/verify-change-password").post( accountController.verifyOTPAndChangePassword);
 Router.route("/verify-otp").post(accountController.verifyOTP);
+
+Router.route("/:id/get_2FA_QRcode").get(accountController.get_2FA_QRcode);
+Router.route("/:id/verify_2fa").post(accountController.verify_2fa);
 // Router.post("/",  accountController.createAccount );
 
 export const accountRoute = Router;

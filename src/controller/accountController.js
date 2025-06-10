@@ -1,6 +1,13 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../utils/ApiError";
 import { accountService } from "../services/accountService";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
+
+const SERVICE_NAME = "FastFoodOnline - admin";
+
+import FA_SecretKey from "../models/2fa_secretKey";
+import Account from "../models/account";
 const createNew = async (req, res, next) => {
   try {
     const createAccount = await accountService.createNew(req.body);
@@ -13,9 +20,7 @@ const createNew = async (req, res, next) => {
 const requestOTP = async (req, res, next) => {
   try {
     await accountService.requestOTP(req);
-    res
-    .status(StatusCodes.OK)
-    .json({ message: "Gửi OTP thành công" });
+    res.status(StatusCodes.OK).json({ message: "Gửi OTP thành công" });
   } catch (error) {
     next(error);
   }
@@ -24,9 +29,7 @@ const resetPassword = async (req, res, next) => {
   const { phonenumber, email } = req.body;
   try {
     await accountService.resetPassword(phonenumber, email);
-    res
-    .status(StatusCodes.OK)
-    .json({ message: "Gửi OTP thành công" });
+    res.status(StatusCodes.OK).json({ message: "Gửi OTP thành công" });
   } catch (error) {
     next(error);
   }
@@ -47,8 +50,6 @@ const verifyOTPAndChangePassword = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 const login = async (req, res, next) => {
   const { phonenumber, password } = req.body;
@@ -141,6 +142,97 @@ const getById = async (req, res, next) => {
     next(error);
   }
 };
+const get_2FA_QRcode = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const account = await accountService.getById(id);
+
+    if (!account) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Không tìm thấy người dùng" });
+    }
+
+    if (account.role === 3) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "User không cần đăng nhập 2FA" });
+    }
+
+    let faSecretKey;
+
+    const twoFASecretKey = await FA_SecretKey.findOne({ account: id });
+
+    if (!twoFASecretKey) {
+      const new2FASecret = await FA_SecretKey.create({
+        account: id,
+        key: authenticator.generateSecret(),
+      });
+      faSecretKey = new2FASecret.key;
+    } else {
+      faSecretKey = twoFASecretKey.key;
+    }
+
+    const otpToken = authenticator.keyuri(
+      account.email,
+      SERVICE_NAME,
+      faSecretKey
+    );
+
+    const qrcodeImageURL = await QRCode.toDataURL(otpToken);
+
+    return res.status(StatusCodes.OK).json({ qrcode: qrcodeImageURL });
+  } catch (error) {
+    next(error);
+  }
+};
+const verify_2fa = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const account = await accountService.getById(id);
+
+    if (!account) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Không tìm thấy người dùng" });
+    }
+
+    if (account.role === 3) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "User không cần đăng nhập 2FA" });
+    }
+
+    const twoFASecretKey = await FA_SecretKey.findOne({ account: id });
+
+    if (!twoFASecretKey) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Không tìm thấy 2FA secret key" });
+    }
+
+    const clientOTPToken = req.body.otpToken;
+    const isValid = authenticator.verify({
+      token: clientOTPToken,
+      secret: twoFASecretKey.key,
+    });
+
+    if (!isValid) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "OTP không đúng" });
+    }
+
+    await Account.findByIdAndUpdate(id, { showQrCode: false });
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: "Xác thực 2FA thành công." });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const changePassword = async (req, res, next) => {
   const { id, currentPassword, newPassword, confirmPassword } = req.body;
 
@@ -175,5 +267,7 @@ export const accountController = {
   requestOTP,
   verifyOTP,
   resetPassword,
-  verifyOTPAndChangePassword
+  verifyOTPAndChangePassword,
+  get_2FA_QRcode,
+  verify_2fa,
 };

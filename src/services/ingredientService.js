@@ -88,6 +88,7 @@ const getMonthlyExpenses = async (year) => {
         totalExpense: monthExpense ? monthExpense.totalExpense : 0, 
       };
     });
+    console.log("check revenue", expensesByMonth);
 
     return expensesByMonth;
   } catch (error) {

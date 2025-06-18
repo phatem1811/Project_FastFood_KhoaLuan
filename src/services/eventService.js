@@ -25,39 +25,30 @@ const updateNew = async (id, reqBody) => {
     const products = Array.isArray(reqBody.products) ? reqBody.products : [];
     const isActive = reqBody.isActive;
 
-    let updateData = { ...reqBody };
-    if (isActive === false) {
-      updateData.products = [];
-    }
-
+    // 1. Lấy event hiện tại và danh sách sản phẩm cũ
     const currentEvent = await Event.findById(id);
     if (!currentEvent) {
       throw new Error("Không tìm thấy sự kiện.");
     }
 
+    const oldProducts = await Product.find({ event: id }).select("_id");
+
+    // 2. Kiểm tra discount có thay đổi không
+    const isDiscountChanged =
+      reqBody.discountPercent !== currentEvent.discountPercent;
+
+    // 3. Chuẩn bị dữ liệu để update Event
+    let updateData = { ...reqBody };
+    if (isActive === false) {
+      updateData.products = [];
+    }
+
+    // 4. Cập nhật Event
     const updated = await Event.findByIdAndUpdate(id, updateData, {
       new: true,
     });
 
-    if (
-      reqBody.discountPercent !== undefined &&
-      reqBody.discountPercent !== currentEvent.discountPercent
-    ) {
-      const affectedProducts = await Product.find({ event: id });
-      const newDiscount = updated.discountPercent;
-
-      await Promise.all(
-        affectedProducts.map(async (product) => {
-          const discount = (product.price * newDiscount) / 100;
-          const newCurrentPrice = product.price - discount;
-
-          await Product.findByIdAndUpdate(product._id, {
-            $set: { currentPrice: newCurrentPrice },
-          });
-        })
-      );
-    }
-
+    //  Nếu event bị vô hiệu hóa -> reset toàn bộ sản phẩm liên quan
     if (isActive === false) {
       await Product.updateMany({ event: id }, [
         {
@@ -69,42 +60,61 @@ const updateNew = async (id, reqBody) => {
       ]);
     }
 
-    const currentProducts = await Product.find({ event: updated._id }).select(
-      "_id"
-    );
+    const oldIds = oldProducts.map((p) => p._id.toString());
+    const newIds = products.map((id) => id.toString());
 
-    const removedProducts = currentProducts.filter(
-      (product) => !products.includes(product._id.toString())
-    );
+    const isProductListChanged =
+      oldIds.length !== newIds.length ||
+      !oldIds.every((id) => newIds.includes(id));
 
-    if (removedProducts.length > 0) {
-      await Product.updateMany(
-        { _id: { $in: removedProducts.map((product) => product._id) } },
-        [
-          {
-            $set: {
-              event: null,
-              currentPrice: "$price",
-            },
-          },
-        ]
+    if (isProductListChanged) {
+      const removedProducts = oldProducts.filter(
+        (product) => !newIds.includes(product._id.toString())
       );
+      if (removedProducts.length > 0) {
+        await Product.updateMany(
+          { _id: { $in: removedProducts.map((p) => p._id) } },
+          [
+            {
+              $set: {
+                event: null,
+                currentPrice: "$price",
+              },
+            },
+          ]
+        );
+      }
     }
 
+    // Gán sự kiện và tính giá giảm cho sản phẩm mới
     if (products.length > 0) {
       const discountPercent = updated.discountPercent;
       await Promise.all(
         products.map(async (productId) => {
           const product = await Product.findById(productId);
-
           if (product) {
             const discount = (product.price * discountPercent) / 100;
             const newCurrentPrice = product.price - discount;
-
             await Product.findByIdAndUpdate(productId, {
               $set: { event: updated._id, currentPrice: newCurrentPrice },
             });
           }
+        })
+      );
+    }
+
+    //  Nếu discount thay đổi, cập nhật lại giá cho tất cả sản phẩm thuộc event mới
+    if (isDiscountChanged) {
+      const affectedProducts = await Product.find({ event: updated._id });
+      const newDiscount = updated.discountPercent;
+
+      await Promise.all(
+        affectedProducts.map(async (product) => {
+          const discount = (product.price * newDiscount) / 100;
+          const newCurrentPrice = product.price - discount;
+          await Product.findByIdAndUpdate(product._id, {
+            $set: { currentPrice: newCurrentPrice },
+          });
         })
       );
     }
@@ -114,6 +124,7 @@ const updateNew = async (id, reqBody) => {
     throw error;
   }
 };
+
 // const unblockEvent = async (id) => {
 //   try {
 //     const updatedAccount = await Account.findByIdAndUpdate(

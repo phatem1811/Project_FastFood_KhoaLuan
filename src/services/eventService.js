@@ -22,7 +22,7 @@ const getList = async () => {
 };
 const updateNew = async (id, reqBody) => {
   try {
-    const products = reqBody.products;
+    const products = Array.isArray(reqBody.products) ? reqBody.products : [];
     const isActive = reqBody.isActive;
 
     let updateData = { ...reqBody };
@@ -30,42 +30,68 @@ const updateNew = async (id, reqBody) => {
       updateData.products = [];
     }
 
+    const currentEvent = await Event.findById(id);
+    if (!currentEvent) {
+      throw new Error("Không tìm thấy sự kiện.");
+    }
+
     const updated = await Event.findByIdAndUpdate(id, updateData, {
       new: true,
     });
+
+    if (
+      reqBody.discountPercent !== undefined &&
+      reqBody.discountPercent !== currentEvent.discountPercent
+    ) {
+      const affectedProducts = await Product.find({ event: id });
+      const newDiscount = updated.discountPercent;
+
+      await Promise.all(
+        affectedProducts.map(async (product) => {
+          const discount = (product.price * newDiscount) / 100;
+          const newCurrentPrice = product.price - discount;
+
+          await Product.findByIdAndUpdate(product._id, {
+            $set: { currentPrice: newCurrentPrice },
+          });
+        })
+      );
+    }
+
     if (isActive === false) {
+      await Product.updateMany({ event: id }, [
+        {
+          $set: {
+            event: null,
+            currentPrice: "$price",
+          },
+        },
+      ]);
+    }
+
+    const currentProducts = await Product.find({ event: updated._id }).select(
+      "_id"
+    );
+
+    const removedProducts = currentProducts.filter(
+      (product) => !products.includes(product._id.toString())
+    );
+
+    if (removedProducts.length > 0) {
       await Product.updateMany(
-        { event: id },
+        { _id: { $in: removedProducts.map((product) => product._id) } },
         [
           {
             $set: {
-              event: null,        
-              currentPrice: "$price", 
+              event: null,
+              currentPrice: "$price",
             },
           },
         ]
       );
-  
     }
 
-    const currentProducts = await Product.find({ event: updated._id }).select('_id');
-
-    const removedProducts = currentProducts.filter(product => !products.includes(product._id.toString()));
-    if (removedProducts.length > 0) {
-      await Product.updateMany(
-        { _id: { $in: removedProducts.map(product => product._id) } },
-        [
-          { 
-            $set: { 
-              event: null,
-              currentPrice: "$price"  
-            }
-          }
-        ]
-      );
-    }
-
-    if (products && products.length > 0) {
+    if (products.length > 0) {
       const discountPercent = updated.discountPercent;
       await Promise.all(
         products.map(async (productId) => {
@@ -82,9 +108,7 @@ const updateNew = async (id, reqBody) => {
         })
       );
     }
-    if (!updated) {
-      throw new Error("Không tìm thấy sự kiện.");
-    }
+
     return updated;
   } catch (error) {
     throw error;
@@ -135,17 +159,14 @@ const hardDeleteEvent = async (id) => {
       throw new Error("Không tìm thấy sự kiện.");
     }
 
-    await Product.updateMany(
-      { event: id },
-      [
-        {
-          $set: {
-            event: null,        
-            currentPrice: "$price", 
-          },
+    await Product.updateMany({ event: id }, [
+      {
+        $set: {
+          event: null,
+          currentPrice: "$price",
         },
-      ]
-    );
+      },
+    ]);
 
     return {
       message: "Sự kiện đã được xóa thành công.",
@@ -155,7 +176,6 @@ const hardDeleteEvent = async (id) => {
     throw error;
   }
 };
-
 
 const getById = async (id) => {
   try {
@@ -175,5 +195,5 @@ export const eventService = {
   updateNew,
   getById,
   deleteEvent,
-  hardDeleteEvent
+  hardDeleteEvent,
 };

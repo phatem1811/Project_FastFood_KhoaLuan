@@ -8,7 +8,7 @@ Router.route("/list").get(eventController.getList);
 Router.route("/create").post(eventController.createNew);
 
 Router.route("/:id").put(eventController.updateNew);
-Router.route("/:id").put(eventController.updateNew);
+
 
 Router.route("/harddelete/:id").delete(eventController.hardDeleteEvent);
 

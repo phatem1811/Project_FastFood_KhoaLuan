@@ -26,7 +26,9 @@ const login = async (phonenumber, password) => {
     if (account.password !== password) {
       throw new Error("Số điện thoại hoặc Mật khẩu không đúng");
     }
-
+    if (account.state === false) {
+      throw new Error("Tài khoản đã bị khóa.");
+    }
     const access_token = jwt.sign(
       { id: account._id, phonenumber: account.phonenumber },
       process.env.JWT_SECRET,

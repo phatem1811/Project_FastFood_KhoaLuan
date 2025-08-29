@@ -33,17 +33,17 @@ const updateNew = async (id, reqBody) => {
 
     const oldProducts = await Product.find({ event: id }).select("_id");
 
-    // 2. Kiểm tra discount có thay đổi không
+    //  Kiểm tra discount có thay đổi không
     const isDiscountChanged =
       reqBody.discountPercent !== currentEvent.discountPercent;
 
-    // 3. Chuẩn bị dữ liệu để update Event
+    //  Chuẩn bị dữ liệu để update Event
     let updateData = { ...reqBody };
     if (isActive === false) {
       updateData.products = [];
     }
 
-    // 4. Cập nhật Event
+    // Cập nhật Event
     const updated = await Event.findByIdAndUpdate(id, updateData, {
       new: true,
     });
